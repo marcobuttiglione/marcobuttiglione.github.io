@@ -2,30 +2,127 @@
 import BaseHead from '../components/BaseHead.astro';
 import Footer from '../components/Footer.astro';
 import Header from '../components/Header.astro';
-import { SITE_DESCRIPTION, SITE_TITLE } from '../consts';
+import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
+import { Image } from 'astro:assets';
+import profileImage from '../assets/profile_image.jpg';
 ---
 
 <!doctype html>
 <html lang="en">
 	<head>
 		<BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
+		<style>
+			section {
+				padding: 2rem 0;
+				border-bottom: 1px solid #eee;
+			}
+			section:last-child {
+				border-bottom: none;
+			}
+			h2 {
+				margin-bottom: 1rem;
+			}
+			.project-card {
+				border: 1px solid #ddd;
+				padding: 1rem;
+				border-radius: 8px;
+				margin-bottom: 1rem;
+			}
+			.hero-content {
+				display: flex;
+				align-items: center;
+				gap: 2rem;
+			}
+			.hero-text {
+				flex: 1;
+			}
+			.profile-image {
+				width: 250px;
+				height: 250px;
+				border-radius: 50%;
+				object-fit: cover;
+				border: 4px solid var(--gray-light);
+				box-shadow: var(--box-shadow);
+			}
+			@media (max-width: 720px) {
+				.hero-content {
+					flex-direction: column-reverse;
+					text-align: center;
+				}
+			}
+		</style>
 	</head>
-	<body>
+	<body id="top">
 		<Header />
 		<main>
-			<h1>👋 Hi, I'm Marco</h1>
-			<p>
-				I am a <strong>PhD Student in Computer Engineering</strong> specializing in <strong>Computer Graphics and Virtual Reality</strong>.
-			</p>
-			<p>
-				Beyond academia, I work as a <strong>Game Developer and Designer</strong>. I am part of <strong>Rewind Studios</strong>, an indie team currently developing <em>Paradox!</em>, which has a demo available on Steam.
-			</p>
-			<p>
-				I am passionate about creating immersive experiences and pushing the boundaries of interactive media. I am also <strong>open to external projects</strong> and collaborations.
-			</p>
-			<p>
-				Feel free to explore my <a href="/blog">blog</a> or learn more <a href="/about">about me</a>.
-			</p>
+			<section id="hero">
+				<div class="hero-content">
+					
+					<div class="hero-text">
+						<h1>👋 Hi, I'm Marco</h1>
+						<p>
+							I am a <strong>PhD Student in Computer Engineering</strong> specializing in <strong>Computer Graphics and Virtual Reality</strong>.
+						</p>
+						<p>
+							I strive to bridge the gap between academic research and practical game development, applying rigorous engineering principles to creative design.
+						</p>
+					</div>
+					<Image src={profileImage} alt="Marco Buttiglione" class="profile-image" />
+				</div>
+			</section>
+
+			<section id="about">
+				<h2>About Me</h2>
+				<p>
+					I am Marco Domenico Buttiglione, a PhD Student in Computer Engineering with a focus on Computer Graphics and Virtual Reality. My academic research explores the intersection of immersive technologies and interactive systems.
+				</p>
+				<p>
+					I am passionate about creating immersive experiences and pushing the boundaries of interactive media. I am also <strong>open to external projects</strong> and collaborations.
+				</p>
+			</section>
+
+			<section id="projects">
+				<h2>Projects</h2>
+				<div class="project-card">
+					<h3>Paradox! (Rewind Studios)</h3>
+					<img src="https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/3129310/ss_119d10bae003f7244a510b7546b60daaea0e6f91.1920x1080.jpg" alt="Paradox! Screenshot" style="width: 100%; border-radius: 8px; margin-bottom: 1rem;" />
+					<p>
+						<strong>Paradox!</strong> is a fast-paced, single-screen puzzle platformer that requires planning, logical thinking and quick reflexes.
+					</p>
+					<p>
+						Play as an eccentric scientist stuck in the past after clumsily breaking his time machine, and collaborate with your younger self to return to the present!
+					</p>
+					<p>
+						Every level is played twice: first as the young professor collecting time crystals, and then as your older self manipulating the environment to ensure your younger self's success.
+					</p>
+					<p>
+						<a href="https://store.steampowered.com/app/3129310/Paradox/" target="_blank">Check out our demo on Steam</a>
+					</p>
+				</div>
+				<!-- Add more projects here -->
+			</section>
+
+			<section id="publications">
+				<h2>Publications</h2>
+				<ul>
+					<li>
+						<strong>Paper Title 1</strong> - <em>Conference/Journal Name, Year</em><br/>
+						<small>Authors list...</small>
+					</li>
+					<li>
+						<strong>Paper Title 2</strong> - <em>Conference/Journal Name, Year</em><br/>
+						<small>Authors list...</small>
+					</li>
+				</ul>
+			</section>
+
+			<section id="blog">
+				<h2>Blog</h2>
+				<p>
+					I write about my research, game development, and other tech topics.
+				</p>
+				<a href="/blog">Read my blog posts &rarr;</a>
+			</section>
 		</main>
 		<Footer />
 	</body>
