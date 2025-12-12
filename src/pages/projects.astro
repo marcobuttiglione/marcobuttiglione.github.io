@@ -1,0 +1,57 @@
+---
+import BaseHead from '../components/BaseHead.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<BaseHead title={`Projects - ${SITE_TITLE}`} description={SITE_DESCRIPTION} />
+		<style>
+			section {
+				padding: 2rem 0;
+				border-bottom: 1px solid #eee;
+			}
+			section:last-child {
+				border-bottom: none;
+			}
+			h2 {
+				margin-bottom: 1rem;
+			}
+			.project-card {
+				border: 1px solid #ddd;
+				padding: 1rem;
+				border-radius: 8px;
+				margin-bottom: 1rem;
+			}
+		</style>
+	</head>
+	<body>
+		<Header />
+		<main>
+			<section id="projects">
+				<h2>Projects</h2>
+				<div class="project-card">
+					<h3>Paradox! (Rewind Studios)</h3>
+					<img src="https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/3129310/ss_119d10bae003f7244a510b7546b60daaea0e6f91.1920x1080.jpg" alt="Paradox! Screenshot" style="width: 100%; border-radius: 8px; margin-bottom: 1rem;" />
+					<p>
+						<strong>Paradox!</strong> is a fast-paced, single-screen puzzle platformer that requires planning, logical thinking and quick reflexes.
+					</p>
+					<p>
+						Play as an eccentric scientist stuck in the past after clumsily breaking his time machine, and collaborate with your younger self to return to the present!
+					</p>
+					<p>
+						Every level is played twice: first as the young professor collecting time crystals, and then as your older self manipulating the environment to ensure your younger self's success.
+					</p>
+					<p>
+						<a href="https://store.steampowered.com/app/3129310/Paradox/" target="_blank">Check out our demo on Steam</a>
+					</p>
+				</div>
+				<!-- Add more projects here -->
+			</section>
+		</main>
+		<Footer />
+	</body>
+</html>

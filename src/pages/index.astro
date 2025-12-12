@@ -5,123 +5,185 @@ import Header from '../components/Header.astro';
 import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
 import { Image } from 'astro:assets';
 import profileImage from '../assets/profile_image.jpg';
+import '../styles/home.css';
+import fs from 'node:fs';
+import path from 'node:path';
+import { toJSON } from 'bibtex-parser-js';
+import { publicationMetadata } from '../data/publications';
+
+const bibPath = path.join(process.cwd(), 'src/assets/scopus.bib');
+const bibContent = fs.readFileSync(bibPath, 'utf-8');
+const cleanBibContent = bibContent.replace(/^Scopus[\s\S]*?@/, '@');
+const entries = toJSON(cleanBibContent);
+
+const featuredEntries = entries.filter((entry: any) => {
+	const metadata = publicationMetadata[entry.citationKey];
+	return metadata?.featured;
+}).sort((a: any, b: any) => {
+	return parseInt(b.entryTags.YEAR) - parseInt(a.entryTags.YEAR);
+});
+
+function formatAuthors(authorString: string) {
+	if (!authorString) return '';
+	const authors = authorString.split(' and ');
+	const formattedAuthors = authors.map(auth => {
+		const parts = auth.trim().split(',');
+		if (parts.length < 2) return auth;
+		const surname = parts[0].trim();
+		const names = parts[1].trim().split(/\s+/);
+		const initials = names.map(n => n[0].toUpperCase() + '.').join(' ');
+		return `${surname}, ${initials}`;
+	});
+	if (formattedAuthors.length === 0) return '';
+	if (formattedAuthors.length === 1) return formattedAuthors[0];
+	const lastAuthor = formattedAuthors.pop();
+	return `${formattedAuthors.join(', ')} and ${lastAuthor}`;
+}
 ---
 
 <!doctype html>
 <html lang="en">
 	<head>
 		<BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
-		<style>
-			section {
-				padding: 2rem 0;
-				border-bottom: 1px solid #eee;
-			}
-			section:last-child {
-				border-bottom: none;
-			}
-			h2 {
-				margin-bottom: 1rem;
-			}
-			.project-card {
-				border: 1px solid #ddd;
-				padding: 1rem;
-				border-radius: 8px;
-				margin-bottom: 1rem;
-			}
-			.hero-content {
-				display: flex;
-				align-items: center;
-				gap: 2rem;
-			}
-			.hero-text {
-				flex: 1;
-			}
-			.profile-image {
-				width: 250px;
-				height: 250px;
-				border-radius: 50%;
-				object-fit: cover;
-				border: 4px solid var(--gray-light);
-				box-shadow: var(--box-shadow);
-			}
-			@media (max-width: 720px) {
-				.hero-content {
-					flex-direction: column-reverse;
-					text-align: center;
-				}
-			}
-		</style>
+
 	</head>
-	<body id="top">
+	<body id="top" class="home">
 		<Header />
 		<main>
-			<section id="hero">
+			<section id="about">
 				<div class="hero-content">
 					
-					<div class="hero-text">
-						<h1>👋 Hi, I'm Marco</h1>
-						<p>
-							I am a <strong>PhD Student in Computer Engineering</strong> specializing in <strong>Computer Graphics and Virtual Reality</strong>.
-						</p>
-						<p>
-							I strive to bridge the gap between academic research and practical game development, applying rigorous engineering principles to creative design.
-						</p>
+					<!-- Left Column: Profile -->
+					<div class="profile-sidebar">
+						<Image src={profileImage} alt="Marco Buttiglione" class="profile-image" />
+						<div class="profile-info">
+							<h1>Marco Domenico Buttiglione</h1>
+							<p class="role">PhD Student &<br>Game Developer</p>
+							
+							<div class="social-icons">
+								<a href="mailto:marcodomenico.buttiglione@gmail.com" aria-label="Email">
+									<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"></rect><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path></svg>
+								</a>
+								<a href="https://scholar.google.com/citations?user=gbSBgYwAAAAJ" target="_blank" aria-label="Google Scholar">
+									<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+								</a>
+								<a href="https://www.linkedin.com/in/marco-dom-buttiglione/" target="_blank" aria-label="LinkedIn">
+									<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg>
+								</a>
+								<a href="https://github.com/marcobuttiglione" target="_blank" aria-label="GitHub">
+									<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>
+								</a>
+							</div>
+						</div>
 					</div>
-					<Image src={profileImage} alt="Marco Buttiglione" class="profile-image" />
+
+					<!-- Right Column: Content -->
+					<div class="main-content">
+						<section class="about-section">
+							<h2>About Me</h2>
+							<p>
+								I am a <strong>PhD Student in Computer Engineering</strong> specializing in <strong>Computer Graphics and Virtual Reality</strong>.
+							</p>
+							<p>
+								My academic research explores the intersection of immersive technologies and interactive systems. I strive to bridge the gap between academic research and practical game development, applying rigorous engineering principles to creative design.
+							</p>
+							<p>
+								I am passionate about creating immersive experiences and pushing the boundaries of interactive media. I am also <strong>open to external projects</strong> and collaborations.
+							</p>
+							<p>
+								Before starting my PhD, I worked on various game development projects, honing my skills in real-time rendering and engine architecture.
+							</p>
+						</section>
+
+						<div class="info-grid">
+							<section class="info-column">
+								<h3>Interests</h3>
+								<ul class="interests-list">
+									<li>Computer Graphics</li>
+									<li>Virtual Reality</li>
+									<li>Game Development</li>
+									<li>Human Computer Interaction</li>
+								</ul>
+							</section>
+
+							<section class="info-column">
+								<h3>Education</h3>
+								<ul class="education-list">
+									<li class="education-item">
+										<div class="education-icon">
+											<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+										</div>
+										<div class="education-details">
+											<strong>PhD in Computer Engineering</strong>
+											<small>Politecnico di Milano, Current</small>
+										</div>
+									</li>
+									<li class="education-item">
+										<div class="education-icon">
+											<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+										</div>
+										<div class="education-details">
+											<strong>M.Sc. in Computer science and engineering</strong>
+											<small>Politecnico di Milano, 2024</small>
+										</div>
+									</li>
+									<li class="education-item">
+										<div class="education-icon">
+											<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+										</div>
+										<div class="education-details">
+											<strong>B.Sc. in Computer Science and Automation Engineering</strong>
+											<small>Politecnico di Bari, 2021</small>
+										</div>
+									</li>
+								</ul>
+							</section>
+						</div>
+					</div>
 				</div>
 			</section>
 
-			<section id="about">
-				<h2>About Me</h2>
-				<p>
-					I am Marco Domenico Buttiglione, a PhD Student in Computer Engineering with a focus on Computer Graphics and Virtual Reality. My academic research explores the intersection of immersive technologies and interactive systems.
-				</p>
-				<p>
-					I am passionate about creating immersive experiences and pushing the boundaries of interactive media. I am also <strong>open to external projects</strong> and collaborations.
-				</p>
-			</section>
-
-			<section id="projects">
-				<h2>Projects</h2>
-				<div class="project-card">
-					<h3>Paradox! (Rewind Studios)</h3>
-					<img src="https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/3129310/ss_119d10bae003f7244a510b7546b60daaea0e6f91.1920x1080.jpg" alt="Paradox! Screenshot" style="width: 100%; border-radius: 8px; margin-bottom: 1rem;" />
-					<p>
-						<strong>Paradox!</strong> is a fast-paced, single-screen puzzle platformer that requires planning, logical thinking and quick reflexes.
-					</p>
-					<p>
-						Play as an eccentric scientist stuck in the past after clumsily breaking his time machine, and collaborate with your younger self to return to the present!
-					</p>
-					<p>
-						Every level is played twice: first as the young professor collecting time crystals, and then as your older self manipulating the environment to ensure your younger self's success.
-					</p>
-					<p>
-						<a href="https://store.steampowered.com/app/3129310/Paradox/" target="_blank">Check out our demo on Steam</a>
-					</p>
+			<section class="full-width-section alternate-bg">
+				<div class="section-content">
+					<h2>Projects</h2>
+					<div class="preview-item">
+						<h3>Paradox! (Rewind Studios)</h3>
+						<p>A fast-paced, single-screen puzzle platformer that requires planning, logical thinking and quick reflexes.</p>
+						<a href="/projects" class="read-more">View all projects &rarr;</a>
+					</div>
 				</div>
-				<!-- Add more projects here -->
 			</section>
 
-			<section id="publications">
-				<h2>Publications</h2>
-				<ul>
-					<li>
-						<strong>Paper Title 1</strong> - <em>Conference/Journal Name, Year</em><br/>
-						<small>Authors list...</small>
-					</li>
-					<li>
-						<strong>Paper Title 2</strong> - <em>Conference/Journal Name, Year</em><br/>
-						<small>Authors list...</small>
-					</li>
-				</ul>
+			<section class="full-width-section">
+				<div class="section-content">
+					<h2>Selected Publications</h2>
+					<div class="preview-item">
+						<ul class="publication-list-preview">
+							{featuredEntries.map((entry: any) => {
+								const metadata = publicationMetadata[entry.citationKey];
+								return (
+								<li>
+									<strong>{entry.entryTags.TITLE}</strong>
+									<br/>
+									<span class="pub-authors-preview">{formatAuthors(entry.entryTags.AUTHOR)}</span>
+									<br/>
+									<em>{entry.entryTags.JOURNAL || entry.entryTags.BOOKTITLE || 'Conference/Journal'}, {entry.entryTags.YEAR}</em>
+								</li>
+							)})}
+						</ul>
+						<a href="/publications" class="read-more">View all publications &rarr;</a>
+					</div>
+				</div>
 			</section>
 
-			<section id="blog">
-				<h2>Blog</h2>
-				<p>
-					I write about my research, game development, and other tech topics.
-				</p>
-				<a href="/blog">Read my blog posts &rarr;</a>
+			<section class="full-width-section alternate-bg">
+				<div class="section-content">
+					<h2>Latest Blog Posts</h2>
+					<p>
+						I write about my research, game development, and other tech topics.
+					</p>
+					<a href="/blog" class="read-more">Read my blog posts &rarr;</a>
+				</div>
 			</section>
 		</main>
 		<Footer />
