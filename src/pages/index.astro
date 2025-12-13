@@ -10,6 +10,11 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { BibtexParser } from 'bibtex-js-parser';
 import { publicationMetadata } from '../data/publications';
+import { careerData } from '../data/career';
+import { getCollection } from 'astro:content';
+
+const projects = await getCollection('projects');
+const projectsData = projects.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
 
 const bibPath = path.join(process.cwd(), 'src/assets/scopus.bib');
 const bibContent = fs.readFileSync(bibPath, 'utf-8');
@@ -42,6 +47,16 @@ function formatAuthors(authorString: string) {
 	const lastAuthor = formattedAuthors.pop();
 	return `${formattedAuthors.join(', ')} and ${lastAuthor}`;
 }
+
+const groupedCareerData = careerData.reduce((acc, job) => {
+	const lastGroup = acc[acc.length - 1];
+	if (lastGroup && lastGroup.company === job.company) {
+		lastGroup.jobs.push(job);
+	} else {
+		acc.push({ company: job.company, jobs: [job] });
+	}
+	return acc;
+}, [] as { company: string; jobs: typeof careerData }[]);
 ---
 
 <!doctype html>
@@ -143,16 +158,77 @@ function formatAuthors(authorString: string) {
 
 			<section class="full-width-section alternate-bg">
 				<div class="section-content">
+					<h2>Career</h2>
+					<ul class="career-list">
+						{groupedCareerData.map((group) => (
+							<li class="career-company-group">
+								{group.jobs.map((job) => (
+									<div class="career-item">
+										<div class="career-details">
+											<strong>{job.role} @ {job.company}</strong>
+											<small>{job.startDate} - {job.endDate} | {job.location} {job.type ? `(${job.type})` : ''}</small>
+											{job.description && <p>{job.description}</p>}
+										</div>
+									</div>
+								))}
+							</li>
+						))}
+					</ul>
+					<a href="/ButtiglioneMARCODOMENICO_Resume.pdf" class="cv-button" download>Download CV</a>
+				</div>
+			</section>
+
+			<section class="full-width-section projects-section">
+				<div class="section-content">
 					<h2>Projects</h2>
-					<div class="preview-item">
-						<h3>Paradox! (Rewind Studios)</h3>
-						<p>A fast-paced, single-screen puzzle platformer that requires planning, logical thinking and quick reflexes.</p>
+					
+					<div class="carousel-container">
+						<div class="carousel-track">
+							{projectsData.map((project) => (
+								<a href={`/projects/${project.id}`} class="project-card-link">
+									<div class="project-card">
+										{project.data.heroImage && <Image src={project.data.heroImage} alt={project.data.title} class="project-image" />}
+										<div class="project-content">
+											<h3>{project.data.title}</h3>
+											{project.data.company && <span class="project-company">{project.data.company}</span>}
+											<p>{project.data.description}</p>
+											{project.data.tags && (
+												<div class="project-tags">
+													{project.data.tags.map((tag: string) => <span class="tag">{tag}</span>)}
+												</div>
+											)}
+										</div>
+									</div>
+								</a>
+							))}
+							{/* Duplicate for infinite scroll effect */}
+							{projectsData.map((project) => (
+								<a href={`/projects/${project.id}`} class="project-card-link" aria-hidden="true">
+									<div class="project-card">
+										{project.data.heroImage && <Image src={project.data.heroImage} alt={project.data.title} class="project-image" />}
+										<div class="project-content">
+											<h3>{project.data.title}</h3>
+											{project.data.company && <span class="project-company">{project.data.company}</span>}
+											<p>{project.data.description}</p>
+											{project.data.tags && (
+												<div class="project-tags">
+													{project.data.tags.map((tag: string) => <span class="tag">{tag}</span>)}
+												</div>
+											)}
+										</div>
+									</div>
+								</a>
+							))}
+						</div>
+					</div>
+
+					<div style="text-align: center; margin-top: 2rem;">
 						<a href="/projects" class="read-more">View all projects &rarr;</a>
 					</div>
 				</div>
 			</section>
 
-			<section class="full-width-section">
+			<section class="full-width-section alternate-bg">
 				<div class="section-content">
 					<h2>Selected Publications</h2>
 					<div class="preview-item">

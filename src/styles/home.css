@@ -226,3 +226,178 @@ section {
 		grid-template-columns: 1fr;
 	}
 }
+/* Career Section */
+.career-list {
+	list-style: none;
+	padding: 0;
+	margin: 0 0 2rem 0;
+}
+
+.career-company-group {
+	margin-bottom: 2rem;
+	border-left: 2px solid var(--accent);
+	padding-left: 1.5rem;
+	position: relative;
+}
+
+.career-item {
+	margin-bottom: 1.5rem;
+	position: relative;
+}
+
+.career-item:last-child {
+	margin-bottom: 0;
+}
+
+/* Add a dot for each item to indicate timeline */
+.career-item::before {
+	content: '';
+	position: absolute;
+	left: -1.85rem; /* Adjust based on padding-left of group */
+	top: 0.4rem;
+	width: 0.5rem;
+	height: 0.5rem;
+	background-color: var(--accent);
+	border-radius: 50%;
+	border: 2px solid var(--bg-color); /* Optional: to separate from line if needed, but line is offset */
+}
+
+.career-details strong {
+	display: block;
+	font-size: 1.1rem;
+	color: rgb(var(--black));
+}
+
+.career-details small {
+	display: block;
+	color: var(--gray);
+	font-size: 0.9rem;
+	margin-bottom: 0.5rem;
+}
+
+.cv-button {
+	display: inline-block;
+	background-color: var(--accent);
+	color: white;
+	padding: 0.8rem 1.5rem;
+	border-radius: 4px;
+	text-decoration: none;
+	font-weight: bold;
+	transition: background-color 0.2s;
+}
+
+.cv-button:hover {
+	background-color: var(--accent-dark);
+	text-decoration: none;
+}
+
+/* Projects Carousel */
+.projects-section {
+	overflow: hidden; /* Ensure no horizontal scrollbar on the page */
+}
+
+.carousel-container {
+	width: 100%;
+	overflow: hidden;
+	position: relative;
+	padding: 1rem 0;
+	mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+	-webkit-mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+}
+
+.carousel-track {
+	display: flex;
+	gap: 2rem;
+	width: max-content;
+	animation: scroll 30s linear infinite;
+}
+
+.carousel-track:hover {
+	animation-play-state: paused;
+}
+
+.project-card {
+	background: var(--bg-color);
+	border: 1px solid var(--gray-light);
+	border-radius: 8px;
+	padding: 0;
+	box-shadow: var(--box-shadow);
+	transition: transform 0.2s;
+	overflow: hidden;
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+}
+
+.project-image {
+	width: 100%;
+	height: 160px;
+	object-fit: cover;
+	border-bottom: 1px solid var(--gray-light);
+}
+
+.project-content {
+	padding: 1.5rem;
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+}
+
+.project-card:hover {
+	transform: translateY(-5px);
+}
+
+.project-card h3 {
+	font-size: 1.2rem;
+	margin-bottom: 0.5rem;
+	color: var(--accent);
+}
+
+.project-company {
+	display: block;
+	font-size: 0.9rem;
+	color: var(--gray);
+	margin-bottom: 1rem;
+	font-weight: bold;
+}
+
+.project-card p {
+	font-size: 0.95rem;
+	margin-bottom: 1.5rem;
+	line-height: 1.5;
+}
+
+.project-tags {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.5rem;
+}
+
+.tag {
+	background-color: rgba(var(--gray-light), 0.5);
+	color: rgb(var(--gray-dark));
+	font-size: 0.75rem;
+	padding: 0.2rem 0.6rem;
+	border-radius: 12px;
+	border: 1px solid var(--gray);
+}
+
+@keyframes scroll {
+	0% {
+		transform: translateX(0);
+	}
+	100% {
+		transform: translateX(-50%);
+	}
+}
+
+.project-card-link {
+	text-decoration: none;
+	color: inherit;
+	display: block;
+	flex: 0 0 300px;
+}
+
+.project-card-link:hover {
+	text-decoration: none;
+}
