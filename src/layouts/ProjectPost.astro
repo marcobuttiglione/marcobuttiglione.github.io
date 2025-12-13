@@ -8,7 +8,7 @@ import { Image } from 'astro:assets';
 
 type Props = CollectionEntry<'projects'>['data'];
 
-const { title, description, pubDate, updatedDate, heroImage, company, tags, link } = Astro.props;
+const { title, description, pubDate, updatedDate, heroImage, company, tags, link, inDevelopment } = Astro.props;
 ---
 
 <html lang="en">
@@ -77,6 +77,23 @@ const { title, description, pubDate, updatedDate, heroImage, company, tags, link
                 text-align: center;
                 margin-top: 2rem;
             }
+			.hero-image {
+				width: 100%;
+				position: relative;
+			}
+			.status-badge {
+				position: absolute;
+				top: 20px;
+				right: 20px;
+				background-color: #ff9800;
+				color: white;
+				font-size: 0.9rem;
+				font-weight: bold;
+				padding: 0.4rem 0.8rem;
+				border-radius: 4px;
+				box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+				text-transform: uppercase;
+			}
 		</style>
 	</head>
 
@@ -86,19 +103,22 @@ const { title, description, pubDate, updatedDate, heroImage, company, tags, link
 			<article>
 				<div class="hero-image">
 					{heroImage && <Image width={1020} height={510} src={heroImage} alt="" />}
+					{inDevelopment && <span class="status-badge">In Development</span>}
 				</div>
 				<div class="prose">
 					<div class="title">
-						<div class="date">
-							<FormattedDate date={pubDate} />
-							{
-								updatedDate && (
-									<div class="last-updated-on">
-										Last updated on <FormattedDate date={updatedDate} />
-									</div>
-								)
-							}
-						</div>
+						{!inDevelopment && (
+							<div class="date">
+								<FormattedDate date={pubDate} />
+								{
+									updatedDate && (
+										<div class="last-updated-on">
+											Last updated on <FormattedDate date={updatedDate} />
+										</div>
+									)
+								}
+							</div>
+						)}
 						<h1>{title}</h1>
                         {company && <span class="company">{company}</span>}
 						<hr />

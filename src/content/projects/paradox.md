@@ -5,6 +5,7 @@ company: "Rewind Studios"
 pubDate: "2022-10-01"
 heroImage: "../../assets/project_img/paradox/paradox.png"
 tags: ["Game Dev", "Unity", "C#"]
+inDevelopment: true
 link: "https://store.steampowered.com/app/3129310/Paradox/"
 ---
 

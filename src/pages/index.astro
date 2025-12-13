@@ -14,7 +14,11 @@ import { careerData } from '../data/career';
 import { getCollection } from 'astro:content';
 
 const projects = await getCollection('projects');
-const projectsData = projects.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+const projectsData = projects.sort((a, b) => {
+	if (a.data.inDevelopment && !b.data.inDevelopment) return -1;
+	if (!a.data.inDevelopment && b.data.inDevelopment) return 1;
+	return b.data.pubDate.valueOf() - a.data.pubDate.valueOf();
+});
 
 const bibPath = path.join(process.cwd(), 'src/assets/scopus.bib');
 const bibContent = fs.readFileSync(bibPath, 'utf-8');
@@ -187,7 +191,10 @@ const groupedCareerData = careerData.reduce((acc, job) => {
 							{projectsData.map((project) => (
 								<a href={`/projects/${project.id}`} class="project-card-link">
 									<div class="project-card">
-										{project.data.heroImage && <Image src={project.data.heroImage} alt={project.data.title} class="project-image" />}
+										<div class="image-container">
+											{project.data.heroImage && <Image src={project.data.heroImage} alt={project.data.title} class="project-image" />}
+											{project.data.inDevelopment && <span class="status-badge">In Development</span>}
+										</div>
 										<div class="project-content">
 											<h3>{project.data.title}</h3>
 											{project.data.company && <span class="project-company">{project.data.company}</span>}
@@ -205,7 +212,10 @@ const groupedCareerData = careerData.reduce((acc, job) => {
 							{projectsData.map((project) => (
 								<a href={`/projects/${project.id}`} class="project-card-link" aria-hidden="true">
 									<div class="project-card">
-										{project.data.heroImage && <Image src={project.data.heroImage} alt={project.data.title} class="project-image" />}
+										<div class="image-container">
+											{project.data.heroImage && <Image src={project.data.heroImage} alt={project.data.title} class="project-image" />}
+											{project.data.inDevelopment && <span class="status-badge">In Development</span>}
+										</div>
 										<div class="project-content">
 											<h3>{project.data.title}</h3>
 											{project.data.company && <span class="project-company">{project.data.company}</span>}
@@ -222,9 +232,7 @@ const groupedCareerData = careerData.reduce((acc, job) => {
 						</div>
 					</div>
 
-					<div style="text-align: center; margin-top: 2rem;">
-						<a href="/projects" class="read-more">View all projects &rarr;</a>
-					</div>
+					<a href="/projects" class="read-more">View all projects &rarr;</a>
 				</div>
 			</section>
 
