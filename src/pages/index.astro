@@ -8,19 +8,22 @@ import profileImage from '../assets/profile_image.jpg';
 import '../styles/home.css';
 import fs from 'node:fs';
 import path from 'node:path';
-import { toJSON } from 'bibtex-parser-js';
+import { BibtexParser } from 'bibtex-js-parser';
 import { publicationMetadata } from '../data/publications';
 
 const bibPath = path.join(process.cwd(), 'src/assets/scopus.bib');
 const bibContent = fs.readFileSync(bibPath, 'utf-8');
-const cleanBibContent = bibContent.replace(/^Scopus[\s\S]*?@/, '@');
-const entries = toJSON(cleanBibContent);
+const cleanBibContent = bibContent
+	.replace(/^[\uFEFF]?Scopus[\s\S]*?@/, '@')
+	.replace('10.1115/DETC2025-168422', 'DETC2025-168422')
+	.replace(/@CONFERENCE/g, '@inproceedings');
+const entries = BibtexParser.parseToJSON(cleanBibContent);
 
 const featuredEntries = entries.filter((entry: any) => {
-	const metadata = publicationMetadata[entry.citationKey];
+	const metadata = publicationMetadata[entry.id];
 	return metadata?.featured;
 }).sort((a: any, b: any) => {
-	return parseInt(b.entryTags.YEAR) - parseInt(a.entryTags.YEAR);
+	return parseInt(b.year) - parseInt(a.year);
 });
 
 function formatAuthors(authorString: string) {
@@ -160,14 +163,14 @@ function formatAuthors(authorString: string) {
 					<div class="preview-item">
 						<ul class="publication-list-preview">
 							{featuredEntries.map((entry: any) => {
-								const metadata = publicationMetadata[entry.citationKey];
+								const metadata = publicationMetadata[entry.id];
 								return (
 								<li>
-									<strong>{entry.entryTags.TITLE}</strong>
+									<strong>{entry.title}</strong>
 									<br/>
-									<span class="pub-authors-preview">{formatAuthors(entry.entryTags.AUTHOR)}</span>
+									<span class="pub-authors-preview">{formatAuthors(entry.author)}</span>
 									<br/>
-									<em>{entry.entryTags.JOURNAL || entry.entryTags.BOOKTITLE || 'Conference/Journal'}, {entry.entryTags.YEAR}</em>
+									<em>{entry.journal || entry.booktitle || 'Conference/Journal'}, {entry.year}</em>
 								</li>
 							)})}
 						</ul>

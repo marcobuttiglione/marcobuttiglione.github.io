@@ -5,7 +5,7 @@ import Footer from '../components/Footer.astro';
 import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
 import fs from 'node:fs';
 import path from 'node:path';
-import { toJSON } from 'bibtex-parser-js';
+import { BibtexParser } from 'bibtex-js-parser';
 import { Image } from 'astro:assets';
 import { publicationMetadata } from '../data/publications';
 
@@ -14,13 +14,16 @@ const bibContent = fs.readFileSync(bibPath, 'utf-8');
 
 // Clean up the file content if necessary (remove non-bibtex lines at the top)
 // The parser might fail on the header lines "Scopus EXPORT DATE..."
-const cleanBibContent = bibContent.replace(/^Scopus[\s\S]*?@/, '@');
+const cleanBibContent = bibContent
+	.replace(/^[\uFEFF]?Scopus[\s\S]*?@/, '@')
+	.replace('10.1115/DETC2025-168422', 'DETC2025-168422')
+	.replace(/@CONFERENCE/g, '@inproceedings');
 
-const entries = toJSON(cleanBibContent);
+const entries = BibtexParser.parseToJSON(cleanBibContent);
 
 // Sort by year descending
 const sortedEntries = entries.sort((a: any, b: any) => {
-	return parseInt(b.entryTags.YEAR) - parseInt(a.entryTags.YEAR);
+	return parseInt(b.year) - parseInt(a.year);
 });
 
 function formatAuthors(authorString: string) {
@@ -136,23 +139,23 @@ function formatAuthors(authorString: string) {
 				<h1>Publications</h1>
 				<ul class="publication-list">
 					{sortedEntries.map((entry: any) => {
-						const metadata = publicationMetadata[entry.citationKey];
+						const metadata = publicationMetadata[entry.id];
 						return (
 						<li class="publication-item">
 							{metadata?.image && (
 								<div class="pub-image-container">
-									<Image src={metadata.image} alt={entry.entryTags.TITLE} class="pub-image" />
+									<Image src={metadata.image} alt={entry.title} class="pub-image" />
 								</div>
 							)}
 							<div class="pub-content">
-								<span class="pub-title">{entry.entryTags.TITLE}</span>
-								<span class="pub-authors">{formatAuthors(entry.entryTags.AUTHOR)}</span>
+								<span class="pub-title">{entry.title}</span>
+								<span class="pub-authors">{formatAuthors(entry.author)}</span>
 								<span class="pub-venue">
-									{entry.entryTags.JOURNAL || entry.entryTags.BOOKTITLE || 'Conference/Journal'}, {entry.entryTags.YEAR}
+									{entry.journal || entry.booktitle || 'Conference/Journal'}, {entry.year}
 								</span>
 								<div class="pub-links">
-									{entry.entryTags.DOI && (
-										<a href={`https://doi.org/${entry.entryTags.DOI}`} target="_blank">
+									{entry.doi && (
+										<a href={`https://doi.org/${entry.doi}`} target="_blank">
 											DOI
 										</a>
 									)}									

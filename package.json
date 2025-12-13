@@ -13,7 +13,7 @@
     "@astrojs/rss": "^4.0.14",
     "@astrojs/sitemap": "^3.6.0",
     "astro": "^5.16.4",
-    "bibtex-parser-js": "^0.0.2",
+    "bibtex-js-parser": "^1.1.6",
     "sharp": "^0.34.3"
   }
 }

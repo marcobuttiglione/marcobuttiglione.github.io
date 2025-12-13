@@ -14,31 +14,31 @@ export interface PublicationMetadata {
 }
 
 export const publicationMetadata: Record<string, PublicationMetadata> = {
-	"10.1115/DETC2025-168422": {
+	"DETC2025-168422": {
 		image: alessiImg,
 		featured: true,
 		extraText: "Best Paper Award",
 		// video: "https://www.youtube.com/watch?v=example",
 		// code: "https://github.com/example/repo"
 	},
-	"BUTTIGLIONE2025661": {
+	"Buttiglione2025661": {
 		image: buttiglione2025661Img,
         featured: true,
 	},
-	"FALCONE2025668": {
+	"Falcone2025668": {
 		image: falcone2025668Img,
 	},
-	"PATTI2024368": {
+	"Patti2024368": {
 		image: patti2024368Img,
         featured: true,
         video: "https://www.youtube.com/watch?v=6d3-Trpk7lA",
 	},
-	"BUTTIGLIONE2024536": {
+	"Buttiglione2024536": {
 		image: buttiglione2024536Img,
         video: "https://www.youtube.com/watch?v=PSc5dPDgTFM",
         code: "https://github.com/marcobuttiglione/Thoracoscopic-Training-VR",
 	},
-	"PIAZZOLLA2024": {
+	"Piazzolla2024": {
 		image: piazzolla2024Img,
 	}
 };
