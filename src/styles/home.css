@@ -82,6 +82,7 @@ section {
 	display: flex;
 	flex-direction: column;
 	gap: 1rem;
+	scroll-margin-top: 50px; /* Prevent header overlap when scrolling to anchor */
 }
 .about-section h2 {
 	font-size: 2rem;
@@ -212,16 +213,61 @@ section {
 	font-size: 0.95rem;
 }
 
+.scroll-down-arrow {
+	display: none;
+}
+
 @media (max-width: 800px) {
 	.hero-content {
 		grid-template-columns: 1fr;
+		padding-top: 0; /* Remove top padding to let sidebar take full height */
 	}
 	.profile-sidebar {
-		position: static;
+		position: relative;
 		margin-bottom: 2rem;
 		border-bottom: 1px solid var(--gray-light);
 		padding-bottom: 2rem;
+		
+		/* Full screen setup */
+		min-height: calc(100vh - 60px); /* Adjust for header height approx */
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		align-items: center;
 	}
+	
+	.scroll-down-arrow {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		margin-top: 2rem;
+		color: white;
+		background-color: #333;
+		padding: 0.8rem 0.3rem;
+		border-radius: 50px;
+		animation: bounce 2s infinite;
+		position: absolute;
+		bottom: 2rem;
+		box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+	}
+
+	.scroll-down-arrow svg {
+		width: 18px;
+		height: 18px;
+	}
+
+	@keyframes bounce {
+		0%, 20%, 50%, 80%, 100% {
+			transform: translateY(0);
+		}
+		40% {
+			transform: translateY(-10px);
+		}
+		60% {
+			transform: translateY(-5px);
+		}
+	}
+
 	.info-grid {
 		grid-template-columns: 1fr;
 	}
