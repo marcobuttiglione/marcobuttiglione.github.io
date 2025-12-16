@@ -230,6 +230,7 @@ section {
 		
 		/* Full screen setup */
 		min-height: calc(100vh - 60px); /* Adjust for header height approx */
+		min-height: calc(100svh - 60px); /* Use svh for mobile browsers */
 		display: flex;
 		flex-direction: column;
 		justify-content: center;
