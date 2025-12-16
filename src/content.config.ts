@@ -11,6 +11,7 @@ const projects = defineCollection({
 			pubDate: z.coerce.date(),
 			updatedDate: z.coerce.date().optional(),
 			heroImage: image().optional(),
+			youtubeVideo: z.string().optional(),
 			tags: z.array(z.string()).optional(),
 			link: z.string().optional(), // External link if needed
 			inDevelopment: z.boolean().optional().default(false),
