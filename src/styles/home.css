@@ -250,6 +250,14 @@ section {
 		position: absolute;
 		bottom: 2rem;
 		box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+		transition: opacity 0.3s ease, visibility 0.3s ease;
+		opacity: 1;
+		visibility: visible;
+	}
+
+	.scroll-down-arrow.hidden {
+		opacity: 0;
+		visibility: hidden;
 	}
 
 	.scroll-down-arrow svg {

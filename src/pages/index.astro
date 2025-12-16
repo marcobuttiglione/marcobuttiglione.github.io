@@ -261,5 +261,23 @@ const groupedCareerData = careerData.reduce((acc, job) => {
 			</section>
 		</main>
 		<Footer />
+		<script>
+			const arrow = document.querySelector('.scroll-down-arrow');
+			if (arrow) {
+				window.addEventListener('scroll', () => {
+					if (window.scrollY > 20) {
+						arrow.classList.add('hidden');
+					} else {
+						arrow.classList.remove('hidden');
+					}
+				});
+
+				arrow.addEventListener('click', (e) => {
+					// Allow default anchor behavior (smooth scroll via CSS or browser)
+					// but hide the arrow immediately
+					arrow.classList.add('hidden');
+				});
+			}
+		</script>
 	</body>
 </html>
