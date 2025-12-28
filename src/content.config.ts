@@ -10,7 +10,7 @@ const projects = defineCollection({
 			company: z.string().optional(),
 			pubDate: z.coerce.date(),
 			updatedDate: z.coerce.date().optional(),
-			heroImage: image().optional(),
+			heroImage: z.union([image(), z.string()]).optional(),
 			youtubeVideo: z.string().optional(),
 			tags: z.array(z.string()).optional(),
 			role: z.string().optional(), // New: Specific role (e.g. "Lead Dev")

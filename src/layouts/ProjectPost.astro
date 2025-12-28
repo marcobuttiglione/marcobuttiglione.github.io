@@ -246,7 +246,13 @@ function getEmbedUrl(url: string) {
                                 />
                             </div>
 						) : (
-							heroImage && <Image width={1020} height={510} src={heroImage} alt="" />
+							heroImage && (
+                                typeof heroImage === 'string' ? (
+                                    <img width={1020} height={510} src={heroImage} alt="" />
+                                ) : (
+                                    <Image width={1020} height={510} src={heroImage} alt="" />
+                                )
+                            )
 						)
 					}
 					{inDevelopment && <span class="status-badge">In Development</span>}
@@ -304,7 +310,7 @@ function getEmbedUrl(url: string) {
                                     class="gallery-img" 
                                     width={600} 
                                     height={400} 
-                                    data-full-res={img.src} 
+                                    data-full-res={typeof img === 'string' ? img : img.src} 
                                 />
                             ))}
                         </div>

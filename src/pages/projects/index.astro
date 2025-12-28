@@ -51,6 +51,10 @@ const projects = (await getCollection('projects')).sort((a, b) => {
 			ul li img {
 				margin-bottom: 0.5rem;
 				border-radius: 12px;
+				width: 100%;
+				height: auto;
+				aspect-ratio: 720 / 360;
+				object-fit: cover;
 			}
 			ul li a {
 				display: block;
@@ -111,7 +115,13 @@ const projects = (await getCollection('projects')).sort((a, b) => {
 							<li>
 								<a href={`/projects/${project.id}/`}>
 									<div class="image-container">
-										{project.data.heroImage && <Image width={720} height={360} src={project.data.heroImage} alt="" />}
+										{project.data.heroImage && (
+                                            typeof project.data.heroImage === 'string' ? (
+                                                <img width={720} height={360} src={project.data.heroImage} alt="" />
+                                            ) : (
+                                                <Image width={720} height={360} src={project.data.heroImage} alt="" />
+                                            )
+                                        )}
 										{project.data.inDevelopment && <span class="status-badge">In Development</span>}
 									</div>
 									<h4 class="title">{project.data.title}</h4>
