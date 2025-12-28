@@ -13,6 +13,9 @@ const projects = defineCollection({
 			heroImage: image().optional(),
 			youtubeVideo: z.string().optional(),
 			tags: z.array(z.string()).optional(),
+			role: z.string().optional(), // New: Specific role (e.g. "Lead Dev")
+			projectType: z.string().optional(), // New: Type of project (e.g. "PhD Research", "Game Jam")
+			gallery: z.array(image()).optional(), // New: Gallery images
 			link: z.string().optional(), // External link if needed
 			inDevelopment: z.boolean().optional().default(false),
 		}),
