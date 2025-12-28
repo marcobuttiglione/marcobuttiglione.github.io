@@ -91,6 +91,15 @@ section {
 	padding-bottom: 0.5rem;
 }
 
+.about-section p {
+	hyphens: auto;
+	-webkit-hyphens: auto;
+	text-wrap: pretty;
+	line-height: 1.6;
+	margin-bottom: 1rem;
+	text-align: justify;
+}
+
 .info-grid {
 	display: grid;
 	grid-template-columns: 1fr 1fr;
