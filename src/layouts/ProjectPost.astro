@@ -283,7 +283,14 @@ function getEmbedUrl(url: string) {
                     {gallery && (
                         <div class="gallery">
                             {gallery.map((img) => (
-                                <Image src={img} alt="Project screenshot" class="gallery-img" width={600} height={400} />
+                                <Image 
+                                    src={img} 
+                                    alt="Project screenshot" 
+                                    class="gallery-img" 
+                                    width={600} 
+                                    height={400} 
+                                    data-full-res={img.src} 
+                                />
                             ))}
                         </div>
                     )}
@@ -309,7 +316,9 @@ function getEmbedUrl(url: string) {
                 images.forEach(img => {
                     img.addEventListener('click', function(this: HTMLImageElement) {
                         modal.style.display = "flex"; // Changed from block to flex for centering
-                        modalImg.src = this.src;
+                        // Use the full resolution image source stored in data attribute
+                        const fullResSrc = this.getAttribute('data-full-res');
+                        modalImg.src = fullResSrc || this.src;
                     });
                 });
 
