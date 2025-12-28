@@ -147,8 +147,8 @@ import { SITE_TITLE } from '../consts';
 	const sunIcon = document.getElementById('sun-icon');
 	const moonIcon = document.getElementById('moon-icon');
 
-	// Check for saved theme or default to dark
-	const theme = localStorage.getItem('theme') || 'dark';
+	// Check for saved theme or default to light
+	const theme = localStorage.getItem('theme') || 'light';
 	document.documentElement.setAttribute('data-theme', theme);
 
 	const updateIcon = (theme: string) => {

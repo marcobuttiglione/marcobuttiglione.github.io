@@ -8,7 +8,15 @@ import { Image } from 'astro:assets';
 
 type Props = CollectionEntry<'projects'>['data'];
 
-const { title, description, pubDate, updatedDate, heroImage, company, tags, link, inDevelopment } = Astro.props;
+const { title, description, pubDate, updatedDate, heroImage, company, tags, link, inDevelopment, youtubeVideo } = Astro.props;
+
+function getEmbedUrl(url: string) {
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+    const match = url.match(regExp);
+    return (match && match[2].length === 11)
+      ? `https://www.youtube.com/embed/${match[2]}`
+      : url;
+}
 ---
 
 <html lang="en">
@@ -22,15 +30,19 @@ const { title, description, pubDate, updatedDate, heroImage, company, tags, link
 			}
 			.hero-image {
 				width: 100%;
+				max-width: 1080px;
+				margin: 0 auto;
 			}
 			.hero-image img {
 				display: block;
 				margin: 0 auto;
 				border-radius: 12px;
 				box-shadow: var(--box-shadow);
+				width: 100%;
+				height: auto;
 			}
 			.prose {
-				width: 720px;
+				width: 1080px;
 				max-width: calc(100% - 2em);
 				margin: auto;
 				padding: 1em;
@@ -102,7 +114,22 @@ const { title, description, pubDate, updatedDate, heroImage, company, tags, link
 		<main>
 			<article>
 				<div class="hero-image">
-					{heroImage && <Image width={1020} height={510} src={heroImage} alt="" />}
+					{
+						youtubeVideo ? (
+							<iframe
+								width="100%"
+								height="510"
+								src={getEmbedUrl(youtubeVideo)}
+								title="YouTube video player"
+								frameborder="0"
+								allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+								allowfullscreen
+								style="border-radius: 12px; box-shadow: var(--box-shadow);"
+							/>
+						) : (
+							heroImage && <Image width={1020} height={510} src={heroImage} alt="" />
+						)
+					}
 					{inDevelopment && <span class="status-badge">In Development</span>}
 				</div>
 				<div class="prose">
@@ -128,12 +155,6 @@ const { title, description, pubDate, updatedDate, heroImage, company, tags, link
                     {tags && (
                         <div class="tags">
                             {tags.map(tag => <span class="tag">{tag}</span>)}
-                        </div>
-                    )}
-
-                    {link && (
-                        <div class="project-link">
-                            <a href={link} target="_blank" class="read-more">View Project &rarr;</a>
                         </div>
                     )}
 				</div>
