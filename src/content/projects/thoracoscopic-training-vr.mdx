@@ -3,27 +3,27 @@ title: "ThoracoVR"
 description: "VR-based thoracoscopic surgery simulator using advanced soft-body dynamics for training residents."
 company: "Politecnico di Milano"
 pubDate: "2024-07-01"
-heroImage: "../../assets/project_img/thoraco.jpg"
+heroImage: "../../assets/project_img/thoracovr/thoraco_screen1.jpg"
 tags: ["VR", "Unity", "C#", "XPBD", "Medical Simulation"]
 role: "Researcher & Developer"
 projectType: "Research Project"
 gallery:
-  - "../../assets/project_img/thoraco.jpg"
-  - "../../assets/project_img/thoraco.jpg"
-  - "../../assets/project_img/thoraco.jpg"
-  - "../../assets/project_img/thoraco.jpg"
+  - "../../assets/project_img/thoracovr/thoraco_screen1.jpg"
+  - "../../assets/project_img/thoracovr/thoraco_screen2.png"
+  - "../../assets/project_img/thoracovr/thoraco_screen3.jpg"
+  - "../../assets/project_img/thoracovr/thoraco_screen4.png"
 youtubeVideo: "https://www.youtube.com/watch?v=PSc5dPDgTFM"
 link: "https://github.com/marcobuttiglione/Thoracoscopic-Training-VR"
 ---
 import ProjectButton from '../../components/ProjectButton.astro';
 
-**Thoracoscopic Training VR** is an innovative Virtual Reality (VR) simulation platform designed for thoracoscopic surgery training. Utilizing advanced soft-body simulation techniques, particularly Extended Position-Based Dynamics (XPBD), this platform offers a cost-effective and accessible solution for training thoracic surgery residents in Video-Assisted Thoracoscopic Surgery (VATS) techniques.
+### Description
 
-The system implements XPBD to accurately model the behavior of lung tissue during surgical procedures, providing realistic soft-body simulation. Developed for Meta Quest 2, the platform offers an immersive training experience with immediate visual and haptic feedback for realistic surgical tool-tissue interactions. It includes various customizable training scenarios designed to progressively enhance soft-body manipulation skills, along with a comprehensive system for assessing and providing feedback on trainee performance.
+**Thoracoscopic Training VR** is a Virtual Reality simulation platform developed as part of my **Master's Thesis in Computer Science and Engineering**. It is designed to train thoracic surgery residents in Video-Assisted Thoracoscopic Surgery (VATS), addressing the need for accessible, risk-free training tools by simulating realistic soft-tissue behavior without the high costs of traditional physical simulators.
 
-From a technical perspective, the simulation framework uses a particle-based system with constraints to model deformable objects, employing tetrahedral meshes refined using Delaunay techniques for volume preservation. The simulation is seamlessly integrated into the Unity environment for real-time execution, and records simulation data in CSV format for detailed analysis and validation.
+Developed for **Meta Quest 2**, the system utilizes **Extended Position-Based Dynamics (XPBD)** to accurately model the physical properties of lung tissue. It features a custom particle-based physics engine that handles deformable objects, volume preservation, and collision detection in real-time. The platform provides immediate visual and haptic feedback, allowing trainees to practice complex surgical maneuvers and soft-body manipulation in a controlled environment.
 
-The platform was evaluated in collaboration with thoracic surgery residents at the University of Turin. The study demonstrated improved performance across tasks of varying complexity, with positive feedback on the system's usability, realism, and educational value, highlighting its potential for enhancing surgical skills in a risk-free environment.
+The simulator includes a suite of training scenarios with increasing difficulty and a built-in assessment system that tracks performance metrics. A validation study conducted with residents at the University of Turin demonstrated the system's effectiveness in improving surgical skills and its high perceived realism.
 
 ### Authors
 **Marco Domenico Buttiglione** (Politecnico di Milano), Francesco Guerrera (Università di Torino), Pietro Piazzolla (Politecnico di Milano), Giorgio Colombo (Politecnico di Milano), and Marco Gribaudo (Politecnico di Milano).
