@@ -288,6 +288,16 @@ section {
 
 	.info-grid {
 		grid-template-columns: 1fr;
+		gap: 1rem;
+	}
+
+	.about-section {
+		padding-bottom: 0.5rem;
+	}
+
+	.info-column {
+		padding-top: 0.5rem;
+		padding-bottom: 0.5rem;
 	}
 }
 /* Career Section */
