@@ -191,14 +191,20 @@ const groupedCareerData = careerData.reduce((acc, job) => {
 					<div class="carousel-container">
 						<div class="carousel-track">
 							{projectsData.map((project) => (
-								<a href={`/projects/${project.id}`} class="project-card-link">
+								<div class="project-card-link">
 									<div class="project-card">
 										<div class="image-container">
-											{project.data.heroImage && <Image src={project.data.heroImage} alt={project.data.title} class="project-image" />}
+											{project.data.heroImage && (
+                                                typeof project.data.heroImage === 'string' ? (
+                                                    <img src={project.data.heroImage} alt={project.data.title} class="project-image" />
+                                                ) : (
+                                                    <Image src={project.data.heroImage} alt={project.data.title} class="project-image" />
+                                                )
+                                            )}
 											{project.data.inDevelopment && <span class="status-badge">In Development</span>}
 										</div>
 										<div class="project-content">
-											<h3>{project.data.title}</h3>
+											<h3><a href={`/projects/${project.id}`}>{project.data.title}</a></h3>
 											{project.data.company && <span class="project-company">{project.data.company}</span>}
 											<p>{project.data.description}</p>
 											{project.data.tags && (
@@ -208,18 +214,24 @@ const groupedCareerData = careerData.reduce((acc, job) => {
 											)}
 										</div>
 									</div>
-								</a>
+								</div>
 							))}
 							{/* Duplicate for infinite scroll effect */}
 							{projectsData.map((project) => (
-								<a href={`/projects/${project.id}`} class="project-card-link" aria-hidden="true">
+								<div class="project-card-link" aria-hidden="true">
 									<div class="project-card">
 										<div class="image-container">
-											{project.data.heroImage && <Image src={project.data.heroImage} alt={project.data.title} class="project-image" />}
+											{project.data.heroImage && (
+                                                typeof project.data.heroImage === 'string' ? (
+                                                    <img src={project.data.heroImage} alt={project.data.title} class="project-image" />
+                                                ) : (
+                                                    <Image src={project.data.heroImage} alt={project.data.title} class="project-image" />
+                                                )
+                                            )}
 											{project.data.inDevelopment && <span class="status-badge">In Development</span>}
 										</div>
 										<div class="project-content">
-											<h3>{project.data.title}</h3>
+											<h3><a href={`/projects/${project.id}`} tabindex="-1">{project.data.title}</a></h3>
 											{project.data.company && <span class="project-company">{project.data.company}</span>}
 											<p>{project.data.description}</p>
 											{project.data.tags && (
@@ -229,9 +241,18 @@ const groupedCareerData = careerData.reduce((acc, job) => {
 											)}
 										</div>
 									</div>
-								</a>
+								</div>
 							))}
 						</div>
+					</div>
+
+					<div class="carousel-controls">
+						<button class="carousel-btn prev" aria-label="Previous projects">
+							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+						</button>
+						<button class="carousel-btn next" aria-label="Next projects">
+							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+						</button>
 					</div>
 
 					<a href="/projects" class="read-more">View all projects &rarr;</a>
@@ -261,6 +282,128 @@ const groupedCareerData = careerData.reduce((acc, job) => {
 			</section>
 		</main>
 		<Footer />
+		<script>
+			const track = document.querySelector('.carousel-track') as HTMLElement | null;
+			const container = document.querySelector('.carousel-container') as HTMLElement | null;
+			const prevBtn = document.querySelector('.carousel-btn.prev');
+			const nextBtn = document.querySelector('.carousel-btn.next');
+
+			if (track && container) {
+				let scrollPos = 0;
+				let isDragging = false;
+				let startX = 0;
+				let prevTranslate = 0;
+				let isPaused = false;
+				let scrollTargetDelta = 0;
+				const autoScrollSpeed = 0.5;
+
+				function getSingleSetWidth() {
+					return track!.scrollWidth / 2;
+				}
+
+				function animate() {
+					const maxScroll = getSingleSetWidth();
+					
+					if (!isDragging) {
+						if (Math.abs(scrollTargetDelta) > 0.5) {
+							const step = scrollTargetDelta * 0.1;
+							scrollPos += step;
+							scrollTargetDelta -= step;
+						} else {
+							scrollTargetDelta = 0;
+							if (!isPaused) {
+								scrollPos += autoScrollSpeed;
+							}
+						}
+					}
+
+					// Handle wrapping
+					if (scrollPos >= maxScroll) {
+						scrollPos = scrollPos % maxScroll;
+					} else if (scrollPos < 0) {
+						scrollPos = maxScroll + (scrollPos % maxScroll);
+					}
+
+					track!.style.transform = `translateX(-${scrollPos}px)`;
+					requestAnimationFrame(animate);
+				}
+
+				// Start animation
+				requestAnimationFrame(animate);
+
+				// Pause on hover
+				container.addEventListener('mouseenter', () => isPaused = true);
+				container.addEventListener('mouseleave', () => {
+					if (!isDragging) isPaused = false;
+				});
+
+				// Drag functionality
+				track.addEventListener('mousedown', (e) => {
+					const me = e as MouseEvent;
+					isDragging = true;
+					isPaused = true;
+					scrollTargetDelta = 0;
+					startX = me.pageX;
+					prevTranslate = scrollPos;
+					track!.style.cursor = 'grabbing';
+				});
+
+				window.addEventListener('mouseup', () => {
+					if (isDragging) {
+						isDragging = false;
+						isPaused = false;
+						track!.style.cursor = 'grab';
+					}
+				});
+
+				window.addEventListener('mousemove', (e) => {
+					if (!isDragging) return;
+					const me = e as MouseEvent;
+					me.preventDefault();
+					const currentX = me.pageX;
+					const diff = startX - currentX;
+					scrollPos = prevTranslate + diff;
+				});
+
+				// Touch events
+				track.addEventListener('touchstart', (e) => {
+					const te = e as TouchEvent;
+					isDragging = true;
+					isPaused = true;
+					scrollTargetDelta = 0;
+					startX = te.touches[0].pageX;
+					prevTranslate = scrollPos;
+				});
+
+				window.addEventListener('touchend', () => {
+					if (isDragging) {
+						isDragging = false;
+						setTimeout(() => { isPaused = false; }, 1000);
+					}
+				});
+
+				window.addEventListener('touchmove', (e) => {
+					if (!isDragging) return;
+					const te = e as TouchEvent;
+					const currentX = te.touches[0].pageX;
+					const diff = startX - currentX;
+					scrollPos = prevTranslate + diff;
+				});
+
+				// Buttons
+				if (prevBtn) {
+					prevBtn.addEventListener('click', () => {
+						scrollTargetDelta -= 332; // 300px card + 32px gap (2rem)
+					});
+				}
+
+				if (nextBtn) {
+					nextBtn.addEventListener('click', () => {
+						scrollTargetDelta += 332;
+					});
+				}
+			}
+		</script>
 		<script>
 			const arrow = document.querySelector('.scroll-down-arrow');
 			if (arrow) {
