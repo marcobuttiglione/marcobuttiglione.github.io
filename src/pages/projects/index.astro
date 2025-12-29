@@ -125,7 +125,9 @@ const projects = (await getCollection('projects')).sort((a, b) => {
 										{project.data.inDevelopment && <span class="status-badge">In Development</span>}
 									</div>
 									<h4 class="title">{project.data.title}</h4>
-									{!project.data.inDevelopment && (
+									{project.data.inDevelopment ? (
+										<p class="date">In Development</p>
+									) : (
 										<p class="date">
 											<FormattedDate date={project.data.pubDate} />
 										</p>

@@ -259,7 +259,11 @@ function getEmbedUrl(url: string) {
 				</div>
 				<div class="prose">
 					<div class="title">
-						{!inDevelopment && (
+						{inDevelopment ? (
+							<div class="date">
+								In Development
+							</div>
+						) : (
 							<div class="date">
 								<FormattedDate date={pubDate} />
 								{
@@ -271,7 +275,7 @@ function getEmbedUrl(url: string) {
 								}
 							</div>
 						)}
-						<h1>{title}</h1>
+						<h2>{title}</h2>
                         {company && <span class="company">{company}</span>}
 						
 						{(role || projectType) && (
