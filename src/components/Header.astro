@@ -45,7 +45,7 @@ import { SITE_TITLE } from '../consts';
 	h2 a,
 	h2 a.active {
 		text-decoration: none;
-		color: var(--black);
+		color: rgb(var(--black));
 	}
 	nav {
 		display: flex;
@@ -70,7 +70,7 @@ import { SITE_TITLE } from '../consts';
 	}
 	nav a {
 		padding: 1em 0.5em;
-		color: var(--black);
+		color: rgb(var(--black));
 		border-bottom: 4px solid transparent;
 		text-decoration: none;
 	}
@@ -87,7 +87,7 @@ import { SITE_TITLE } from '../consts';
 		background: none;
 		border: none;
 		cursor: pointer;
-		color: var(--black);
+		color: rgb(var(--black));
 		padding: 0.5em;
 		display: flex;
 		align-items: center;
@@ -98,7 +98,7 @@ import { SITE_TITLE } from '../consts';
 		border: none;
 		cursor: pointer;
 		padding: 0.5em;
-		color: var(--black);
+		color: rgb(var(--black));
 	}
 
 	@media (max-width: 720px) {
@@ -147,9 +147,8 @@ import { SITE_TITLE } from '../consts';
 	const sunIcon = document.getElementById('sun-icon');
 	const moonIcon = document.getElementById('moon-icon');
 
-	// Check for saved theme or default to light
-	const theme = localStorage.getItem('theme') || 'light';
-	document.documentElement.setAttribute('data-theme', theme);
+	// The theme itself is applied by the inline script in BaseHead
+	const theme = document.documentElement.getAttribute('data-theme') || 'light';
 
 	const updateIcon = (theme: string) => {
 		if (theme === 'dark') {

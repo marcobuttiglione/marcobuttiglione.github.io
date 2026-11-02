@@ -3,52 +3,10 @@ import BaseHead from '../components/BaseHead.astro';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
-import fs from 'node:fs';
-import path from 'node:path';
-import { BibtexParser } from 'bibtex-js-parser';
 import { Image } from 'astro:assets';
-import { publicationMetadata } from '../data/publications';
+import { getPublications } from '../lib/publications';
 
-const bibPath = path.join(process.cwd(), 'src/assets/scopus.bib');
-const bibContent = fs.readFileSync(bibPath, 'utf-8');
-
-// Clean up the file content if necessary (remove non-bibtex lines at the top)
-// The parser might fail on the header lines "Scopus EXPORT DATE..."
-const cleanBibContent = bibContent
-	.replace(/^[\uFEFF]?Scopus[\s\S]*?@/, '@')
-	.replace('10.1115/DETC2025-168422', 'DETC2025-168422')
-	.replace(/@CONFERENCE/g, '@inproceedings');
-
-const entries = BibtexParser.parseToJSON(cleanBibContent);
-
-// Sort by year descending
-const sortedEntries = entries.sort((a: any, b: any) => {
-	return parseInt(b.year) - parseInt(a.year);
-});
-
-function formatAuthors(authorString: string) {
-	if (!authorString) return '';
-	
-	const authors = authorString.split(' and ');
-	
-	const formattedAuthors = authors.map(auth => {
-		const parts = auth.trim().split(',');
-		if (parts.length < 2) return auth; // Can't parse
-		
-		const surname = parts[0].trim();
-		const names = parts[1].trim().split(/\s+/);
-		
-		const initials = names.map(n => n[0].toUpperCase() + '.').join(' ');
-		
-		return `${surname}, ${initials}`;
-	});
-	
-	if (formattedAuthors.length === 0) return '';
-	if (formattedAuthors.length === 1) return formattedAuthors[0];
-	
-	const lastAuthor = formattedAuthors.pop();
-	return `${formattedAuthors.join(', ')} and ${lastAuthor}`;
-}
+const publications = getPublications();
 ---
 
 <!doctype html>
@@ -65,7 +23,7 @@ function formatAuthors(authorString: string) {
 				gap: 2rem;
 				margin-bottom: 2rem;
 				padding-bottom: 2rem;
-				border-bottom: 1px solid var(--gray-light);
+				border-bottom: 1px solid rgb(var(--gray-light));
 			}
 			.publication-item:last-child {
 				border-bottom: none;
@@ -84,21 +42,24 @@ function formatAuthors(authorString: string) {
 			.pub-content {
 				flex-grow: 1;
 			}
+			.pub-content .extra-text {
+				margin: 0 0 0.5rem 0;
+			}
 			.pub-title {
 				font-size: 1.2rem;
 				font-weight: 700;
-				color: var(--black);
+				color: rgb(var(--black));
 				margin-bottom: 0.5rem;
 				display: block;
 			}
 			.pub-authors {
-				color: var(--gray-dark);
+				color: rgb(var(--gray-dark));
 				margin-bottom: 0.25rem;
 				display: block;
 			}
 			.pub-venue {
 				font-style: italic;
-				color: var(--gray);
+				color: rgb(var(--gray));
 				display: block;
 				margin-bottom: 0.5rem;
 			}
@@ -138,33 +99,32 @@ function formatAuthors(authorString: string) {
 			<section id="publications">
 				<h1>Publications</h1>
 				<ul class="publication-list">
-					{sortedEntries.map((entry: any) => {
-						const metadata = publicationMetadata[entry.id];
-						return (
+					{publications.map(({ metadata, ...pub }) => (
 						<li class="publication-item">
-							{metadata?.image && (
+							{metadata.image && (
 								<div class="pub-image-container">
-									<Image src={metadata.image} alt={entry.title} class="pub-image" />
+									<Image src={metadata.image} alt={pub.title} class="pub-image" />
 								</div>
 							)}
 							<div class="pub-content">
-								<span class="pub-title">{entry.title}</span>
-								<span class="pub-authors">{formatAuthors(entry.author)}</span>
+								{metadata.extraText && <span class="extra-text">{metadata.extraText}</span>}
+								<span class="pub-title">{pub.title}</span>
+								<span class="pub-authors">{pub.authors}</span>
 								<span class="pub-venue">
-									{entry.journal || entry.booktitle || 'Conference/Journal'}, {entry.year}
+									{pub.venue}, {pub.year}
 								</span>
 								<div class="pub-links">
-									{entry.doi && (
-										<a href={`https://doi.org/${entry.doi}`} target="_blank">
+									{pub.doi && (
+										<a href={`https://doi.org/${pub.doi}`} target="_blank">
 											DOI
 										</a>
-									)}									
-									{metadata?.video && (
+									)}
+									{metadata.video && (
 										<a href={metadata.video} target="_blank">
 											Video
 										</a>
 									)}
-									{metadata?.code && (
+									{metadata.code && (
 										<a href={metadata.code} target="_blank">
 											Code
 										</a>
@@ -172,7 +132,7 @@ function formatAuthors(authorString: string) {
 								</div>
 							</div>
 						</li>
-					)})}
+					))}
 				</ul>
 			</section>
 		</main>
