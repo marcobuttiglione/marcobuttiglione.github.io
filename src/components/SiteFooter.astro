@@ -1,0 +1,29 @@
+---
+import { LINKS } from '../consts';
+---
+
+<footer class="site-footer wrap">
+	<div class="cta">
+		<h2>Have a project<br />in mind? <a href={LINKS.email}>Let's talk.</a></h2>
+		<div class="links label">
+			<a href={LINKS.github} target="_blank" rel="noopener">GitHub</a>
+			<a href={LINKS.linkedin} target="_blank" rel="noopener">LinkedIn</a>
+			<a href={LINKS.scholar} target="_blank" rel="noopener">Scholar</a>
+			<a href={LINKS.cv} download>CV</a>
+		</div>
+	</div>
+	<p class="label copy">&copy; {new Date().getFullYear()} Marco Domenico Buttiglione</p>
+</footer>
+
+<style>
+	.site-footer { margin-top: 5.5rem; padding-bottom: 2rem; }
+	.cta { padding: 3rem; background: var(--surface-dark); color: #fff; border-radius: var(--radius); display: flex; justify-content: space-between; align-items: end; flex-wrap: wrap; gap: 2rem; }
+	h2 { font-size: clamp(2rem, 5vw, 3.6rem); letter-spacing: -0.04em; line-height: 1; margin: 0; font-weight: 800; }
+	h2 a { color: var(--accent); }
+	h2 a:hover { text-decoration: underline; text-decoration-thickness: 3px; text-underline-offset: 6px; }
+	.links { display: flex; flex-wrap: wrap; gap: 1.2rem; }
+	.links a { color: var(--surface-dark-muted); }
+	.links a:hover { color: #fff; }
+	.copy { text-align: center; margin: 1.5rem 0 0; }
+	@media (max-width: 560px) { .cta { padding: 2rem 1.5rem; } }
+</style>

@@ -18,6 +18,7 @@ const projects = defineCollection({
 			gallery: z.array(image()).optional(), // New: Gallery images
 			link: z.string().optional(), // External link if needed
 			inDevelopment: z.boolean().optional().default(false),
+			featured: z.boolean().optional().default(false), // Shown first, as the large card on the home page
 		}),
 });
 

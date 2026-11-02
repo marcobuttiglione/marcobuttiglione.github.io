@@ -1,0 +1,191 @@
+---
+// 3D portrait: the profile photo reconstructed as 3D Gaussians by Apple's SHARP
+// (https://github.com/apple-aiml-research/ml-sharp), converted to public/splats/profile.spz and rendered with Spark.
+// The flat photo stays underneath as poster and fallback (no WebGL2, save-data, load error).
+import { Image } from 'astro:assets';
+import profileImage from '../assets/profile_image.jpg';
+---
+
+<figure class="portrait">
+	<div class="splat-stage" id="splat-stage" data-splat="/splats/profile.spz">
+		<Image src={profileImage} alt="Marco Domenico Buttiglione presenting Paradox! at Milan Games Week" width={900} loading="eager" fetchpriority="high" />
+		<canvas aria-label="Interactive 3D Gaussian Splatting reconstruction of the photo"></canvas>
+		<span class="chip status" id="splat-status">Photo</span>
+		<span class="chip count" id="splat-count"></span>
+		<span class="chip hint">Drag to look around</span>
+	</div>
+	<figcaption>
+		<span class="label">Fig. 1</span>
+		<span>Me at Milan Games Week, presenting the opening of the <a href="/projects/paradox">Paradox!</a> Steam page. Reconstructed in 3D from this single photo with Apple's <a href="https://github.com/apple-aiml-research/ml-sharp" target="_blank" rel="noopener">SHARP</a>.</span>
+	</figcaption>
+</figure>
+
+<style>
+	.portrait { margin: 0; position: relative; }
+	.portrait::before { content: ''; position: absolute; inset: -2.5rem; z-index: -1; background-image: radial-gradient(circle, var(--dots) 1.1px, transparent 1.2px); background-size: 18px 18px; -webkit-mask-image: radial-gradient(closest-side, #000 55%, transparent); mask-image: radial-gradient(closest-side, #000 55%, transparent); }
+	.splat-stage { position: relative; aspect-ratio: 1; border-radius: var(--radius); overflow: hidden; background: #141518; touch-action: pan-y; cursor: grab; box-shadow: var(--shadow); }
+	.splat-stage:active { cursor: grabbing; }
+	.splat-stage img, .splat-stage canvas { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+	.splat-stage img { transition: opacity .9s ease; z-index: 1; pointer-events: none; }
+	.splat-stage.is-3d img { opacity: 0; }
+	.splat-stage .chip { position: absolute; z-index: 2; font-family: var(--mono); font-size: .66rem; text-transform: uppercase; letter-spacing: .05em; color: #fff; padding: .4rem .7rem; background: rgba(20,21,24,.55); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,.12); border-radius: 99px; white-space: nowrap; pointer-events: none; transition: opacity .4s; }
+	.splat-stage .chip :global(b) { color: var(--accent); font-weight: 500; }
+	.chip.status { top: 1rem; left: 1rem; display: flex; align-items: center; gap: .45rem; }
+	.chip.status::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: #9a9ca5; }
+	.is-3d .chip.status::before { background: var(--accent); box-shadow: 0 0 0 3px rgba(255,90,31,.3); }
+	.chip.count { top: 1rem; right: 1rem; opacity: 0; }
+	.is-3d .chip.count { opacity: 1; }
+	.chip.hint { bottom: 1rem; left: 50%; transform: translateX(-50%); opacity: 0; }
+	.is-3d .chip.hint { opacity: 1; }
+	.is-touched .chip.hint { opacity: 0; }
+	.portrait figcaption { margin-top: .9rem; font-size: .88rem; line-height: 1.5; color: var(--muted); display: grid; grid-template-columns: auto 1fr; gap: .8rem; }
+	.portrait figcaption .label { color: var(--accent); padding-top: .15rem; }
+	.portrait figcaption a { color: var(--ink); font-weight: 600; border-bottom: 1px solid var(--accent); }
+</style>
+
+<script>
+	// SHARP output for the 1333x1333 photo: OpenCV axes, camera at the origin (no EXIF, so SHARP assumed 30 mm)
+	const SPLAT = {
+		size: 1333, // image width = height, px
+		focal: 1307.11, // px
+		pivot: 1.6, // metres to the subject at the image centre; the orbit pivots here
+		count: 1154537,
+	};
+
+	const stage = document.getElementById('splat-stage') as HTMLElement;
+	const statusEl = document.getElementById('splat-status') as HTMLElement;
+	const countEl = document.getElementById('splat-count') as HTMLElement;
+	const params = new URLSearchParams(location.search);
+	// ?still skips the intro and the sway (same as reduced motion), handy for screenshots
+	const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches || params.has('still');
+
+	const MAX_YAW = 0.13, MAX_PITCH = 0.06; // radians around the original viewpoint: the crowd is close, keep it subtle
+
+	function hasWebGL2() {
+		try { return !!document.createElement('canvas').getContext('webgl2'); } catch { return false; }
+	}
+
+	async function start() {
+		statusEl.textContent = 'Loading splats…';
+		const THREE = await import('three');
+		const { SparkRenderer, SplatMesh, dyno } = await import('@sparkjsdev/spark');
+
+		const canvas = stage.querySelector('canvas') as HTMLCanvasElement;
+		const renderer = new THREE.WebGLRenderer({ canvas, antialias: false });
+		renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+		renderer.setClearColor(0x141518);
+
+		const scene = new THREE.Scene();
+		const camera = new THREE.PerspectiveCamera(50, 1, 0.05, 200);
+		scene.add(new SparkRenderer({ renderer }));
+
+		const mesh = new SplatMesh({ url: stage.dataset.splat });
+		mesh.quaternion.set(1, 0, 0, 0); // OpenCV (y down, z forward) -> three.js (y up, z back)
+		scene.add(mesh);
+
+		// "Training" intro: every splat starts scattered, blurred and transparent, then converges.
+		const progress = dyno.dynoFloat(reducedMotion ? 1 : 0);
+		mesh.objectModifier = dyno.dynoBlock({ gsplat: dyno.Gsplat }, { gsplat: dyno.Gsplat }, ({ gsplat }) => {
+			const intro = new dyno.Dyno({
+				inTypes: { gsplat: dyno.Gsplat, p: 'float' },
+				outTypes: { gsplat: dyno.Gsplat },
+				globals: () => [`
+					vec3 introHash(uint n) {
+						n = (n ^ 61u) ^ (n >> 16u); n *= 9u; n ^= n >> 4u; n *= 0x27d4eb2du; n ^= n >> 15u;
+						uvec3 v = uvec3(n, n * 16807u, n * 48271u) >> 16u;
+						return vec3(v) / 65535.0;
+					}
+				`],
+				statements: ({ inputs, outputs }) => {
+					const { gsplat: g } = outputs, { gsplat: src, p } = inputs;
+					return [
+						`${g} = ${src};`,
+						`vec3 h = introHash(uint(${src}.index));`,
+						`float e = clamp((${p} - h.x * 0.5) / 0.5, 0.0, 1.0);`,
+						`e = 1.0 - pow(1.0 - e, 3.0);`,
+						`vec3 dir = normalize(h * 2.0 - 1.0 + vec3(1e-3));`,
+						`${g}.center = mix(${src}.center + dir * (0.15 + 0.35 * h.y) * ${src}.center.z, ${src}.center, e);`,
+						`${g}.scales = ${src}.scales * mix(3.0, 1.0, e);`,
+						`${g}.rgba.a = ${src}.rgba.a * smoothstep(0.0, 0.6, e);`,
+					];
+				},
+			});
+			return { gsplat: intro.apply({ gsplat, p: progress }).gsplat };
+		});
+		mesh.updateGenerator();
+
+		// Cover-fit the square photo into the stage, slightly zoomed so orbiting doesn't show the edges.
+		const halfTan = (SPLAT.size / 2) / SPLAT.focal * 0.9;
+		function resize() {
+			const w = stage.clientWidth, h = stage.clientHeight;
+			renderer.setSize(w, h, false);
+			camera.aspect = w / h;
+			camera.fov = 2 * Math.atan(halfTan * Math.min(1, 1 / camera.aspect)) * 180 / Math.PI;
+			camera.updateProjectionMatrix();
+		}
+		new ResizeObserver(resize).observe(stage);
+		resize();
+
+		// Drag to orbit around the subject; vertical swipes still scroll the page on touch.
+		const target = new THREE.Vector3(0, 0, -SPLAT.pivot);
+		let yaw = 0, pitch = 0, goalYaw = 0, goalPitch = 0, touched = false;
+		let drag: { x: number; y: number; yaw: number; pitch: number } | null = null;
+		canvas.addEventListener('pointerdown', (e) => {
+			drag = { x: e.clientX, y: e.clientY, yaw: goalYaw, pitch: goalPitch };
+			touched = true;
+			stage.classList.add('is-touched');
+			canvas.setPointerCapture(e.pointerId);
+		});
+		canvas.addEventListener('pointermove', (e) => {
+			if (!drag) return;
+			const s = 0.9 / stage.clientWidth;
+			goalYaw = THREE.MathUtils.clamp(drag.yaw - (e.clientX - drag.x) * s, -MAX_YAW, MAX_YAW);
+			goalPitch = THREE.MathUtils.clamp(drag.pitch + (e.clientY - drag.y) * s, -MAX_PITCH, MAX_PITCH);
+		});
+		const endDrag = () => { drag = null; };
+		canvas.addEventListener('pointerup', endDrag);
+		canvas.addEventListener('pointercancel', endDrag);
+		canvas.addEventListener('dblclick', () => { goalYaw = 0; goalPitch = 0; });
+
+		let visible = true;
+		new IntersectionObserver(([entry]) => { visible = entry.isIntersecting; }).observe(stage);
+
+		await mesh.initialized;
+		countEl.innerHTML = `<b>${(mesh.packedSplats?.numSplats ?? SPLAT.count).toLocaleString('en-US')}</b> gaussians`;
+		statusEl.textContent = 'Live 3D · SHARP';
+		stage.classList.add('is-3d');
+
+		const t0 = performance.now();
+		renderer.setAnimationLoop((time: number) => {
+			if (!visible) return;
+			if (progress.value < 1) {
+				progress.value = Math.min(1, (performance.now() - t0) / 2200);
+				mesh.updateVersion();
+			}
+			if (!touched && !reducedMotion) {
+				// Gentle sway until the visitor grabs it, so it reads as 3D
+				goalYaw = Math.sin(time / 2600) * 0.08;
+				goalPitch = Math.sin(time / 3700) * 0.025;
+			}
+			yaw += (goalYaw - yaw) * 0.1;
+			pitch += (goalPitch - pitch) * 0.1;
+			camera.position.set(
+				target.x + SPLAT.pivot * Math.sin(yaw) * Math.cos(pitch),
+				target.y + SPLAT.pivot * Math.sin(pitch),
+				target.z + SPLAT.pivot * Math.cos(yaw) * Math.cos(pitch),
+			);
+			camera.lookAt(target);
+			renderer.render(scene, camera);
+		});
+	}
+
+	// The splat is ~14 MB: skip it when the visitor asked to save data
+	const saveData = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData;
+	if (stage && hasWebGL2() && !saveData) {
+		const go = () => start().catch((err) => {
+			console.warn('3D portrait unavailable:', err);
+			statusEl.textContent = 'Photo';
+		});
+		if (document.readyState === 'complete') go(); else addEventListener('load', go, { once: true });
+	}
+</script>

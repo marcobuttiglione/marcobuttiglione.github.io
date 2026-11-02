@@ -1,141 +1,175 @@
 ---
-import BaseHead from '../components/BaseHead.astro';
-import Header from '../components/Header.astro';
-import Footer from '../components/Footer.astro';
-import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
+// Publications: grouped by year, with filters and per-paper BibTeX (all papers at /publications.bib)
 import { Image } from 'astro:assets';
+import Site from '../layouts/Site.astro';
+import { LINKS, SITE_TITLE } from '../consts';
 import { getPublications } from '../lib/publications';
 
 const publications = getPublications();
+const isMe = (author: string) => author.startsWith('Buttiglione,');
+const years = [...new Set(publications.map((p) => p.year))];
+const firstAuthor = publications.filter((p) => isMe(p.authorList[0])).length;
+const awards = publications.filter((p) => p.metadata.extraText).length;
 ---
 
-<!doctype html>
-<html lang="en">
-	<head>
-		<BaseHead title={`Publications - ${SITE_TITLE}`} description={SITE_DESCRIPTION} />
-		<style>
-			.publication-list {
-				list-style: none;
-				padding: 0;
-			}
-			.publication-item {
-				display: flex;
-				gap: 2rem;
-				margin-bottom: 2rem;
-				padding-bottom: 2rem;
-				border-bottom: 1px solid rgb(var(--gray-light));
-			}
-			.publication-item:last-child {
-				border-bottom: none;
-			}
-			.pub-image-container {
-				flex-shrink: 0;
-				width: 200px;
-			}
-			.pub-image {
-				width: 100%;
-				aspect-ratio: 4 / 3;
-				object-fit: cover;
-				border-radius: 8px;
-				box-shadow: var(--box-shadow);
-			}
-			.pub-content {
-				flex-grow: 1;
-			}
-			.pub-content .extra-text {
-				margin: 0 0 0.5rem 0;
-			}
-			.pub-title {
-				font-size: 1.2rem;
-				font-weight: 700;
-				color: rgb(var(--black));
-				margin-bottom: 0.5rem;
-				display: block;
-			}
-			.pub-authors {
-				color: rgb(var(--gray-dark));
-				margin-bottom: 0.25rem;
-				display: block;
-			}
-			.pub-venue {
-				font-style: italic;
-				color: rgb(var(--gray));
-				display: block;
-				margin-bottom: 0.5rem;
-			}
-			.pub-links {
-				margin-top: 0.5rem;
-				display: flex;
-				gap: 1rem;
-				flex-wrap: wrap;
-			}
-			.pub-links a {
-				display: inline-flex;
-				align-items: center;
-				gap: 0.5rem;
-				font-size: 0.9rem;
-				color: var(--accent);
-				text-decoration: none;
-				font-weight: 500;
-			}
-			.pub-links a:hover {
-				text-decoration: underline;
-			}
-			@media (max-width: 720px) {
-				.publication-item {
-					flex-direction: column;
-					gap: 1rem;
-				}
-				.pub-image-container {
-					width: 100%;
-					max-width: 300px;
-				}
-			}
-		</style>
-	</head>
-	<body>
-		<Header />
-		<main>
-			<section id="publications">
-				<h1>Publications</h1>
-				<ul class="publication-list">
-					{publications.map(({ metadata, ...pub }) => (
-						<li class="publication-item">
-							{metadata.image && (
-								<div class="pub-image-container">
-									<Image src={metadata.image} alt={pub.title} class="pub-image" />
-								</div>
-							)}
-							<div class="pub-content">
-								{metadata.extraText && <span class="extra-text">{metadata.extraText}</span>}
-								<span class="pub-title">{pub.title}</span>
-								<span class="pub-authors">{pub.authors}</span>
-								<span class="pub-venue">
-									{pub.venue}, {pub.year}
-								</span>
-								<div class="pub-links">
-									{pub.doi && (
-										<a href={`https://doi.org/${pub.doi}`} target="_blank">
-											DOI
-										</a>
+<Site title={`Publications - ${SITE_TITLE}`} description="Peer-reviewed publications of Marco Domenico Buttiglione on real-time simulation, XR training and Gaussian Splatting.">
+	<header class="page-head">
+		<span class="label">Research</span>
+		<h1>Publications<span>.</span></h1>
+		<p>Peer-reviewed papers on real-time physics simulation, immersive XR training systems and Gaussian Splatting.</p>
+		<div class="head-row">
+			<dl class="facts">
+				<div><dt class="label">Papers</dt><dd>{publications.length}</dd></div>
+				<div><dt class="label">First author</dt><dd>{firstAuthor}</dd></div>
+				<div><dt class="label">Best paper awards</dt><dd class="hl">{awards}</dd></div>
+			</dl>
+			<div class="head-actions">
+				<a href={LINKS.scholar} class="pill" target="_blank" rel="noopener">Google Scholar ↗</a>
+				<a href="/publications.bib" class="pill dark" download>All BibTeX ↓</a>
+			</div>
+		</div>
+	</header>
+
+	<div class="toolbar" role="group" aria-label="Filter publications">
+		<button class="on" data-filter="all">All <span>{publications.length}</span></button>
+		<button data-filter="first">First author <span>{firstAuthor}</span></button>
+		<button data-filter="award">Awards <span>{awards}</span></button>
+	</div>
+
+	<div class="pubs">
+		{years.map((year) => {
+			const inYear = publications.filter((p) => p.year === year);
+			return (
+				<section class="year">
+					<h2 class="year-label"><span>{year}</span><small class="label">{inYear.length} {inYear.length === 1 ? 'paper' : 'papers'}</small></h2>
+					<ol class="entries">
+						{inYear.map((p) => {
+							const n = publications.length - publications.indexOf(p);
+							const doiUrl = p.doi && `https://doi.org/${p.doi}`;
+							return (
+								<li class="pub" id={p.id} data-first={isMe(p.authorList[0]) ? '' : undefined} data-award={p.metadata.extraText ? '' : undefined}>
+									<span class="num label">[{n}]</span>
+									<div class="body">
+										{p.metadata.extraText && <span class="award">★ {p.metadata.extraText}</span>}
+										<h3>{doiUrl ? <a href={doiUrl} target="_blank" rel="noopener">{p.title}</a> : p.title}</h3>
+										<p class="authors">
+											{p.authorList.map((a, i) => (
+												<>{i > 0 && (i === p.authorList.length - 1 ? ' and ' : ', ')}{isMe(a) ? <b>{a}</b> : a}</>
+											))}
+										</p>
+										<p class="venue"><i>{p.venue}</i>{p.volume && `, vol. ${p.volume}`}{p.pages && `, pp. ${p.pages}`}, {p.year}</p>
+										<div class="actions">
+											{doiUrl && <a href={doiUrl} target="_blank" rel="noopener">DOI ↗</a>}
+											<button type="button" class="cite" aria-expanded="false">Cite</button>
+											{p.metadata.video && <a href={p.metadata.video} target="_blank" rel="noopener">Video ↗</a>}
+											{p.metadata.code && <a href={p.metadata.code} target="_blank" rel="noopener">Code ↗</a>}
+										</div>
+										<div class="bib" hidden>
+											<pre>{p.bibtex}</pre>
+											<button type="button" class="copy">Copy</button>
+										</div>
+									</div>
+									{p.metadata.image && (
+										<div class="thumb"><Image src={p.metadata.image} alt="" width={360} /></div>
 									)}
-									{metadata.video && (
-										<a href={metadata.video} target="_blank">
-											Video
-										</a>
-									)}
-									{metadata.code && (
-										<a href={metadata.code} target="_blank">
-											Code
-										</a>
-									)}
-								</div>
-							</div>
-						</li>
-					))}
-				</ul>
-			</section>
-		</main>
-		<Footer />
-	</body>
-</html>
+								</li>
+							);
+						})}
+					</ol>
+				</section>
+			);
+		})}
+	</div>
+</Site>
+
+<style>
+	.head-row { display: flex; justify-content: space-between; align-items: end; gap: 1.5rem; flex-wrap: wrap; margin-top: 2.2rem; padding-top: 1.4rem; border-top: 1px solid var(--line); }
+	.facts { display: flex; gap: 2.5rem; margin: 0; }
+	.facts dd { margin: 0.2rem 0 0; font-size: 2.2rem; font-weight: 800; letter-spacing: -0.04em; line-height: 1; }
+	.facts dd.hl { color: var(--accent); }
+	.head-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+
+	.toolbar { position: sticky; top: 5rem; z-index: 5; display: flex; gap: 4px; width: fit-content; margin: 2.5rem 0 1rem; padding: 4px; background: color-mix(in srgb, var(--card) 85%, transparent); backdrop-filter: blur(8px); border: 1px solid var(--line); border-radius: 99px; }
+	.toolbar button { font: 500 0.72rem var(--mono); text-transform: uppercase; letter-spacing: 0.05em; border: 0; background: transparent; color: var(--muted); padding: 0.5rem 0.9rem; border-radius: 99px; cursor: pointer; }
+	.toolbar button span { opacity: 0.6; margin-left: 0.2rem; }
+	.toolbar button:hover { color: var(--ink); }
+	.toolbar button.on { background: var(--ink); color: var(--bg); }
+
+	.year { display: grid; grid-template-columns: 160px 1fr; gap: 2rem; border-top: 1px solid var(--ink); padding-top: 1.2rem; margin-top: 2.5rem; }
+	.year[hidden] { display: none; }
+	.year-label { position: sticky; top: 9rem; align-self: start; margin: 0; display: grid; gap: 0.3rem; }
+	.year-label span { font-size: 3rem; font-weight: 800; letter-spacing: -0.05em; line-height: 0.9; }
+	.entries { list-style: none; margin: 0; padding: 0; }
+
+	.pub { display: grid; grid-template-columns: 2.6rem 1fr 180px; gap: 1.2rem; padding: 1.4rem 0; border-bottom: 1px solid var(--line); scroll-margin-top: 10rem; }
+	.pub:first-child { padding-top: 0.2rem; }
+	.pub:last-child { border-bottom: 0; }
+	.pub[hidden] { display: none; }
+	.pub:target h3 { color: var(--accent); }
+	.num { padding-top: 0.3rem; }
+	.body { min-width: 0; }
+	.award { margin-bottom: 0.55rem; }
+	h3 { font-size: 1.16rem; line-height: 1.3; letter-spacing: -0.01em; margin: 0 0 0.45rem; font-weight: 700; }
+	h3 a:hover { color: var(--accent); }
+	.authors { margin: 0; color: var(--text); font-size: 0.95rem; }
+	.authors b { color: var(--ink); font-weight: 650; text-decoration: underline; text-decoration-color: var(--accent); text-underline-offset: 3px; }
+	.venue { margin: 0.2rem 0 0; color: var(--muted); font-size: 0.9rem; }
+	.actions { display: flex; gap: 0.4rem; margin-top: 0.8rem; flex-wrap: wrap; }
+	.actions a, .actions button { font: 500 0.68rem var(--mono); text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink); background: var(--card); border: 1px solid var(--line); padding: 0.35rem 0.7rem; border-radius: 8px; cursor: pointer; transition: border-color 0.2s, color 0.2s; }
+	.actions a:hover, .actions button:hover, .actions button[aria-expanded='true'] { border-color: var(--accent); color: var(--accent); }
+	.bib { position: relative; margin-top: 0.8rem; }
+	.bib pre { margin: 0; padding: 1rem 1.1rem; background: var(--surface-dark); color: #e4e4e7; border-radius: 12px; font: 0.74rem/1.6 var(--mono); overflow-x: auto; }
+	.bib .copy { position: absolute; top: 0.6rem; right: 0.6rem; font: 500 0.64rem var(--mono); text-transform: uppercase; letter-spacing: 0.05em; color: #fff; background: rgba(255, 255, 255, 0.1); border: 0; padding: 0.35rem 0.6rem; border-radius: 6px; cursor: pointer; }
+	.bib .copy:hover { background: var(--accent); }
+	.thumb { border-radius: 12px; overflow: hidden; border: 1px solid var(--line); aspect-ratio: 4 / 3; background: var(--card); align-self: start; }
+	.thumb img { width: 100%; height: 100%; object-fit: cover; }
+
+	@media (max-width: 900px) {
+		.year { grid-template-columns: 1fr; gap: 1rem; }
+		.year-label { position: static; grid-auto-flow: column; justify-content: space-between; align-items: end; }
+		.year-label span { font-size: 2.2rem; }
+		.pub { grid-template-columns: 2.2rem 1fr 120px; }
+	}
+	@media (max-width: 560px) {
+		.toolbar { top: 4.6rem; }
+		.facts { gap: 1.5rem; }
+		.facts dd { font-size: 1.8rem; }
+		.pub { grid-template-columns: 1fr; gap: 0.6rem; }
+		.num { display: none; }
+		.thumb { grid-row: 1; max-width: 220px; }
+	}
+</style>
+
+<script>
+	// Filters: hide entries (and empty years) that don't match
+	const buttons = document.querySelectorAll<HTMLButtonElement>('.toolbar button');
+	buttons.forEach((btn) => btn.addEventListener('click', () => {
+		const filter = btn.dataset.filter!;
+		buttons.forEach((b) => b.classList.toggle('on', b === btn));
+		document.querySelectorAll<HTMLElement>('.year').forEach((year) => {
+			let shown = 0;
+			year.querySelectorAll<HTMLElement>('.pub').forEach((pub) => {
+				const match = filter === 'all' || pub.hasAttribute(`data-${filter}`);
+				pub.hidden = !match;
+				if (match) shown++;
+			});
+			year.hidden = shown === 0;
+		});
+	}));
+
+	// Cite: toggle the BibTeX block and copy it
+	document.querySelectorAll<HTMLElement>('.pub').forEach((pub) => {
+		const cite = pub.querySelector<HTMLButtonElement>('.cite')!;
+		const bib = pub.querySelector<HTMLElement>('.bib')!;
+		cite.addEventListener('click', () => {
+			bib.hidden = !bib.hidden;
+			cite.setAttribute('aria-expanded', String(!bib.hidden));
+		});
+		const copy = bib.querySelector<HTMLButtonElement>('.copy')!;
+		copy.addEventListener('click', async () => {
+			await navigator.clipboard.writeText(bib.querySelector('pre')!.textContent!);
+			copy.textContent = 'Copied';
+			setTimeout(() => (copy.textContent = 'Copy'), 1500);
+		});
+	});
+</script>
