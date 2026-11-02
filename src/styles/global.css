@@ -22,6 +22,7 @@
 }
 
 [data-theme="dark"] {
+	color-scheme: dark; /* Dark native scrollbars and form controls */
 	--black: 229, 233, 240; /* Text color */
 	--gray: 96, 115, 159;
 	--gray-light: 34, 41, 57; /* Backgrounds */
@@ -31,7 +32,7 @@
 	--header-shadow: 0 2px 8px rgba(255, 255, 255, 0.05);
 	--bg-color: #0f1219;
 	--gray-gradient: rgba(var(--gray-light), 50%), #0f1219;
-	--box-shadow: 0 2px 6px rgba(255, 255, 255, 0.1), 0 8px 24px rgba(255, 255, 255, 0.1);
+	--box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4), 0 8px 24px rgba(0, 0, 0, 0.4);
 }
 
 html {
@@ -149,6 +150,19 @@ blockquote {
 hr {
 	border: none;
 	border-top: 1px solid rgb(var(--gray-light));
+}
+/* Badge for awards and other highlights on publications */
+.extra-text {
+	display: inline-block;
+	background-color: var(--accent);
+	color: white;
+	font-size: 0.8rem;
+	line-height: 1.6;
+	padding: 0.1rem 0.5rem;
+	border-radius: 4px;
+	margin-left: 0.5rem;
+	vertical-align: middle;
+	font-weight: bold;
 }
 @media (max-width: 720px) {
 	body {

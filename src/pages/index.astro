@@ -6,10 +6,7 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
 import { Image } from 'astro:assets';
 import profileImage from '../assets/profile_image.jpg';
 import '../styles/home.css';
-import fs from 'node:fs';
-import path from 'node:path';
-import { BibtexParser } from 'bibtex-js-parser';
-import { publicationMetadata } from '../data/publications';
+import { getPublications } from '../lib/publications';
 import { careerData } from '../data/career';
 import { getCollection } from 'astro:content';
 
@@ -20,37 +17,7 @@ const projectsData = projects.sort((a, b) => {
 	return b.data.pubDate.valueOf() - a.data.pubDate.valueOf();
 });
 
-const bibPath = path.join(process.cwd(), 'src/assets/scopus.bib');
-const bibContent = fs.readFileSync(bibPath, 'utf-8');
-const cleanBibContent = bibContent
-	.replace(/^[\uFEFF]?Scopus[\s\S]*?@/, '@')
-	.replace('10.1115/DETC2025-168422', 'DETC2025-168422')
-	.replace(/@CONFERENCE/g, '@inproceedings');
-const entries = BibtexParser.parseToJSON(cleanBibContent);
-
-const featuredEntries = entries.filter((entry: any) => {
-	const metadata = publicationMetadata[entry.id];
-	return metadata?.featured;
-}).sort((a: any, b: any) => {
-	return parseInt(b.year) - parseInt(a.year);
-});
-
-function formatAuthors(authorString: string) {
-	if (!authorString) return '';
-	const authors = authorString.split(' and ');
-	const formattedAuthors = authors.map(auth => {
-		const parts = auth.trim().split(',');
-		if (parts.length < 2) return auth;
-		const surname = parts[0].trim();
-		const names = parts[1].trim().split(/\s+/);
-		const initials = names.map(n => n[0].toUpperCase() + '.').join(' ');
-		return `${surname}, ${initials}`;
-	});
-	if (formattedAuthors.length === 0) return '';
-	if (formattedAuthors.length === 1) return formattedAuthors[0];
-	const lastAuthor = formattedAuthors.pop();
-	return `${formattedAuthors.join(', ')} and ${lastAuthor}`;
-}
+const featuredPublications = getPublications().filter((pub) => pub.metadata.featured);
 
 const groupedCareerData = careerData.reduce((acc, job) => {
 	const lastGroup = acc[acc.length - 1];
@@ -80,7 +47,7 @@ const groupedCareerData = careerData.reduce((acc, job) => {
 						<Image src={profileImage} alt="Marco Buttiglione" class="profile-image" />
 						<div class="profile-info">
 							<h1>Marco Domenico Buttiglione</h1>
-							<p class="role">PhD Student &<br>Game Developer</p>
+							<p class="role">PhD Candidate &<br>Game Developer</p>
 							
 							<div class="social-icons">
 								<a href="mailto:marcodomenico.buttiglione@gmail.com" aria-label="Email">
@@ -107,10 +74,13 @@ const groupedCareerData = careerData.reduce((acc, job) => {
 						<section class="about-section">
 							<h2>About Me</h2>
 							<p>
-								I am a <strong>PhD Student</strong> at Politecnico di Milano and a <strong>Game Developer</strong> specializing in <strong>Computer Graphics</strong>, <strong>Virtual Reality</strong>, and <strong>Human-Computer Interaction</strong>.
+								I am a <strong>PhD Candidate</strong> in Computer Science and Engineering at Politecnico di Milano (NECSTLab) and a <strong>Game Developer</strong>. I am currently a <strong>Visiting Researcher</strong> at the Electronic Visualization Laboratory (EVL), University of Illinois Chicago.
 							</p>
 							<p>
-								My research involves the development of <strong>physics-based simulations</strong> for medical training, <strong>VR environments</strong>, and <strong>assistive technologies</strong>. Alongside my PhD, I lead the development at <strong>Rewind Studios</strong>, a professional collective focused on <strong>interactive and gamified experiences</strong>, as well as the puzzle platformer <em>Paradox!</em>.
+								My research focuses on <strong>immersive XR training systems</strong> for <strong>medical applications</strong>, from <strong>surgical simulation</strong> to <strong>VR rehabilitation</strong> with embodied AI coaching. My work spans <strong>real-time rendering</strong>, <strong>Gaussian Splatting</strong> and <strong>game development</strong>.
+							</p>
+							<p>
+								Alongside my PhD, I lead the development at <strong>Rewind Studios</strong>, a professional collective focused on <strong>interactive and gamified experiences</strong>, as well as the puzzle platformer <em>Paradox!</em>.
 							</p>
 						</section>
 
@@ -119,7 +89,8 @@ const groupedCareerData = careerData.reduce((acc, job) => {
 								<h3>Interests</h3>
 								<ul class="interests-list">
 									<li>Computer Graphics</li>
-									<li>Virtual Reality</li>
+									<li>Extended Reality</li>
+									<li>Gaussian Splatting</li>
 									<li>Game Development</li>
 									<li>Human Computer Interaction</li>
 								</ul>
@@ -133,7 +104,7 @@ const groupedCareerData = careerData.reduce((acc, job) => {
 											<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
 										</div>
 										<div class="education-details">
-											<strong>PhD in Computer Engineering</strong>
+											<strong>PhD in Computer Science and Engineering</strong>
 											<small>Politecnico di Milano, Current</small>
 										</div>
 									</li>
@@ -264,17 +235,16 @@ const groupedCareerData = careerData.reduce((acc, job) => {
 					<h2>Selected Publications</h2>
 					<div class="preview-item">
 						<ul class="publication-list-preview">
-							{featuredEntries.map((entry: any) => {
-								const metadata = publicationMetadata[entry.id];
-								return (
+							{featuredPublications.map((pub) => (
 								<li>
-									<strong>{entry.title}</strong>
+									<strong>{pub.title}</strong>
+									{pub.metadata.extraText && <span class="extra-text">{pub.metadata.extraText}</span>}
 									<br/>
-									<span class="pub-authors-preview">{formatAuthors(entry.author)}</span>
+									<span class="pub-authors-preview">{pub.authors}</span>
 									<br/>
-									<em>{entry.journal || entry.booktitle || 'Conference/Journal'}, {entry.year}</em>
+									<em>{pub.venue}, {pub.year}</em>
 								</li>
-							)})}
+							))}
 						</ul>
 						<a href="/publications" class="read-more">View all publications &rarr;</a>
 					</div>

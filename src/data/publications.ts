@@ -4,6 +4,9 @@ import falcone2025668Img from '../assets/paper_img/Falcone2025668.png';
 import patti2024368Img from '../assets/paper_img/Patti2024368.png';
 import buttiglione2024536Img from '../assets/paper_img/BUTTIGLIONE2024536.png';
 import piazzolla2024Img from '../assets/paper_img/PIAZZOLLA2024.png';
+import buttiglione2026748Img from '../assets/paper_img/Buttiglione2026748.png';
+import buttiglione2026755Img from '../assets/paper_img/Buttiglione2026755.png';
+import costantini2026762Img from '../assets/paper_img/Costantini2026762.png';
 
 export interface PublicationMetadata {  
 	image?: ImageMetadata;
@@ -14,6 +17,15 @@ export interface PublicationMetadata {
 }
 
 export const publicationMetadata: Record<string, PublicationMetadata> = {
+	"Buttiglione2026748": {
+		image: buttiglione2026748Img,
+	},
+	"Buttiglione2026755": {
+		image: buttiglione2026755Img,
+	},
+	"Costantini2026762": {
+		image: costantini2026762Img,
+	},
 	"DETC2025-168422": {
 		image: alessiImg,
 		featured: true,
@@ -31,6 +43,7 @@ export const publicationMetadata: Record<string, PublicationMetadata> = {
 	"Patti2024368": {
 		image: patti2024368Img,
         featured: true,
+        extraText: "Best Paper Award",
         video: "https://www.youtube.com/watch?v=6d3-Trpk7lA",
 	},
 	"Buttiglione2024536": {
