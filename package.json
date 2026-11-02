@@ -6,7 +6,8 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "cv": "latexmk -xelatex -interaction=nonstopmode -cd -outdir=build cv/resume.tex && node -e \"require('fs').copyFileSync('cv/build/resume.pdf', 'public/ButtiglioneMARCODOMENICO_Resume.pdf')\""
   },
   "dependencies": {
     "@astrojs/mdx": "^4.3.12",

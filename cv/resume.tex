@@ -1,0 +1,183 @@
+% Resume of Marco Domenico Buttiglione, one A4 page.
+% Build: `npm run cv` (XeLaTeX via latexmk), which also copies the PDF to
+% public/ButtiglioneMARCODOMENICO_Resume.pdf, the file linked from the site.
+% Fonts: Inter and Source Code Pro, both shipped with MiKTeX and TeX Live.
+\documentclass[9pt]{extarticle}
+
+\usepackage[a4paper, top=1.05cm, bottom=0.9cm, left=1.35cm, right=1.35cm]{geometry}
+\usepackage{fontspec}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{qrcode}
+\usepackage[hidelinks]{hyperref}
+
+\hypersetup{
+	pdftitle={Marco Domenico Buttiglione - Resume},
+	pdfauthor={Marco Domenico Buttiglione},
+	pdfsubject={Resume},
+	pdfkeywords={XR, Computer Graphics, Gaussian Splatting, Game Development, PhD},
+}
+
+% Same palette as the website (src/styles/theme.css)
+\definecolor{ink}{HTML}{141518}
+\definecolor{text}{HTML}{3C3E45}
+\definecolor{muted}{HTML}{6B6D74}
+\definecolor{line}{HTML}{E3E1DC}
+\definecolor{accent}{HTML}{FF5A1F}
+\definecolor{soft}{HTML}{FFF0E9}
+
+\setmainfont{Inter}[
+	Extension = .otf,
+	UprightFont = *-Regular,
+	ItalicFont = *-Italic,
+	BoldFont = *-SemiBold,
+	BoldItalicFont = *-SemiBoldItalic,
+	RawFeature = -calt, % Inter's alternates for ( - + × lose their text, breaking copy/paste and ATS parsing
+]
+\newfontface\medium{Inter-Medium.otf}[RawFeature=-calt]
+\newfontface\heavy{Inter-ExtraBold.otf}[LetterSpace=-2.5, RawFeature=-calt]
+\newfontfamily\mono{SourceCodePro}[
+	Extension = .otf,
+	UprightFont = *-Regular,
+	BoldFont = *-Medium,
+]
+
+\pagestyle{empty}
+\setlength{\parindent}{0pt}
+\setlength{\fboxsep}{0pt}
+\color{text}
+
+% ---------- Building blocks ----------
+
+% Section heading: mono uppercase label in accent over a hairline
+\newcommand{\heading}[1]{%
+	\par\vspace{11pt}%
+	{\mono\bfseries\fontsize{7.6}{9}\selectfont\color{accent}\addfontfeatures{LetterSpace=10}\MakeUppercase{#1}}\par
+	\vspace{2.5pt}{\color{line}\hrule height 0.6pt}\vspace{3pt}}
+
+\newcommand{\when}[1]{{\mono\fontsize{7.4}{9}\selectfont\color{muted}#1}}\newcommand{\sep}{\,\textbullet\,}
+
+% \org{Organisation}{Place}: an employer; \role{Title}{Dates}: a position there
+\newcommand{\org}[2]{\par\vspace{6pt}{\fontsize{10.2}{12.2}\selectfont\bfseries\color{ink}#1}\hfill\when{#2}\par}
+\newcommand{\role}[2]{\par\vspace{1.5pt}{\medium\color{ink}#1}\hfill\when{#2}\par}
+
+% Education entry: degree, school, years, details
+\newcommand{\degree}[4]{{\bfseries\color{ink}#1}\par #2\hfill\when{#3}\par
+	{\fontsize{8.3}{10.3}\selectfont\color{muted}#4}\par\vspace{5pt}}
+
+% Skill group: small title + list
+\newcommand{\skill}[2]{{\medium\color{ink}#1}\par #2\par\vspace{3.5pt}}
+
+% Orange tag, e.g. awards
+\newcommand{\badge}[1]{\colorbox{soft}{\strut\hspace{2.5pt}{\mono\bfseries\fontsize{6.3}{7}\selectfont\color{accent}\MakeUppercase{#1}}\hspace{2.5pt}}}
+
+\newcommand{\me}{\textbf{\color{ink}M. D. Buttiglione}}
+\newcommand{\pub}[3]{\item {\bfseries\color{ink}#1.} {\color{muted}#2.} \textit{#3}.}
+
+\setlist[itemize]{leftmargin=0.95em, labelsep=0.45em, itemsep=1pt, topsep=1.5pt, parsep=0pt, partopsep=0pt,
+	label={\color{accent}\raisebox{0.32ex}{\rule{2.7pt}{2.7pt}}}}
+\setlist[enumerate]{leftmargin=1.75em, labelsep=0.5em, itemsep=2.6pt, topsep=1pt, parsep=0pt,
+	label={\when{[\arabic*]}}}
+
+\begin{document}
+\fontsize{9.1}{11.5}\selectfont\raggedright
+\hyphenpenalty=10000 \exhyphenpenalty=10000
+
+% ---------- Header ----------
+\begin{minipage}[b]{\dimexpr\textwidth-2cm}
+	{\heavy\fontsize{25}{27}\selectfont\color{ink}Marco Domenico Buttiglione}\par\vspace{4pt}
+	{\medium\fontsize{10.5}{13}\selectfont\color{accent}PhD Candidate in XR \& Real-Time Graphics\sep Game Developer}\par\vspace{5pt}
+	{\fontsize{7.8}{10}\selectfont\color{muted}%
+		\href{mailto:marcodomenico.buttiglione@gmail.com}{marcodomenico.buttiglione@gmail.com}\enspace\textperiodcentered\enspace
+		\href{https://marcobuttiglione.com}{\textbf{\color{ink}marcobuttiglione.com}}\enspace\textperiodcentered\enspace
+		\href{https://www.linkedin.com/in/marco-dom-buttiglione/}{in/marco-dom-buttiglione}\enspace\textperiodcentered\enspace
+		\href{https://github.com/marcobuttiglione}{github.com/marcobuttiglione}}
+\end{minipage}\hfill
+\begin{minipage}[b]{1.6cm}
+	\raggedleft\href{https://marcobuttiglione.com}{\color{ink}\qrcode[height=1.5cm]{https://marcobuttiglione.com}}
+\end{minipage}
+
+\vspace{8pt}
+{\fontsize{9.6}{12.4}\selectfont
+PhD candidate at \textbf{\color{ink}Politecnico di Milano} (NECSTLab), now \textbf{\color{ink}Visiting Researcher at EVL}, University of Illinois Chicago.
+I build real-time XR systems, from \textbf{\color{ink}Gaussian Splatting} and \textbf{\color{ink}physics-based soft-body simulation} to multi-user VR,
+for medical training and research, and I direct the indie puzzle platformer \textbf{\color{ink}Paradox!}.\par}
+
+% ---------- Two columns ----------
+\begin{minipage}[t]{0.625\textwidth}
+\raggedright
+
+\heading{Experience}
+
+\org{Electronic Visualization Laboratory, UIC}{Chicago, IL, USA}
+\role{Visiting Researcher {\color{muted}(host: Saeed Boorboor)}}{Sep 2026 – Present}
+\begin{itemize}
+	\item Real-time \textbf{3D Gaussian Splatting} for large head-tracked displays such as \textbf{CAVE2}, and volumetric and 4D capture for immersive training.
+\end{itemize}
+
+\org{Politecnico di Milano · NECSTLab}{Milan, Italy}
+\role{PhD Researcher}{Sep 2024 – Present}
+\begin{itemize}
+	\item Research on XR systems for training, mainly in the medical field.
+	\item Built on real-time \textbf{3D Gaussian Splatting}, \textbf{XPBD} soft-body simulation and multi-user VR in Unity and OpenXR.
+\end{itemize}
+\role{Teaching Assistant}{Sep 2024 – Present}
+\begin{itemize}
+	\item \textit{Computer Graphics} (Vulkan, MSc, in English) and \textit{Laboratorio di Rappresentazione Digitale} (BSc, 3D CAD).
+\end{itemize}
+\role{Research Fellow}{May 2024 – Sep 2024}
+\begin{itemize}
+	\item \textbf{XPBD} soft-body framework for interactive anatomical Digital Twins in XR and surgical planning (ASME IDETC-CIE 2024, 2025).
+\end{itemize}
+\org{Rewind Studios}{Milan, Italy}
+\role{Game Director \& Developer}{Oct 2022 – Present}
+\begin{itemize}
+	\item Directing a team of 7 on the puzzle platformer \textbf{Paradox!}: demo out on Steam, full game heading to release.
+	\item Gamification consulting and client projects, including the 3D arcade game \textbf{CubeSnake}, co-developed with Kabum through release.
+\end{itemize}
+\org{Wideverse}{Bari, Italy}
+\role{Frontend Web Developer}{Jan 2021 – Sep 2021}
+\begin{itemize}
+	\item ReactJS CRM portal for the Italian Public Administration; Babylon.js 3D configurator for an outdoor blinds company.
+\end{itemize}
+
+\end{minipage}\hfill
+\begin{minipage}[t]{0.335\textwidth}
+\raggedright
+
+\heading{Education}
+
+\degree{PhD, Information Technology}{Politecnico di Milano}{2024 – now}{Computer Science \& Engineering area. Advisor: Prof.\ Marco Gribaudo}
+\degree{MSc, Computer Science \& Engineering}{Politecnico di Milano}{2021 – 2024}{Thesis: \textit{Soft-Body Simulation for VR-Based Thoracoscopic Training}. 110/110 cum laude}
+\degree{BSc, Computer Science \& Automation}{Politecnico di Bari}{2017 – 2021}{Thesis: \textit{Cloud solutions for multimedia content distribution}. 110/110 cum laude}
+
+\heading{Skills}
+
+\skill{Engines \& XR}{Unity, Unreal Engine, OpenXR, Babylon.js}
+\skill{Graphics \& Simulation}{Vulkan, OpenGL, Gaussian Splatting, XPBD}
+\skill{Programming}{C\#, C++, Python, TypeScript, JavaScript}
+\skill{Web \& ML}{React, HTML/CSS, TensorFlow}
+
+\heading{Languages}
+
+Italian (native)\par English (proficient)\par
+
+\end{minipage}
+
+% ---------- Publications ----------
+% First-author papers, both awards and the Gaussian Splatting one; the rest are commented out
+\heading{Selected publications}
+{\fontsize{8.8}{11}\selectfont
+\begin{enumerate}
+	\pub{Cogito: A Dual-Role VR Platform for Standardized Cognitive Assessment with Behavioral Telemetry}{\me, A. Mancini, L. Ginestretti, M. Gribaudo}{ECMS 2026}
+	\pub{Vendor Lock-In in VR Game Engines: A Structured Comparison of Unity, Unreal Engine, and Godot}{\me, F. Colabene, M. Gribaudo}{ECMS 2026}
+	\pub{A Novel Pipeline for 3D Gaussian Splatting: Bridging Path Tracing and Real-Time Radiance Fields}{F. Costantini, \me, P. Piazzolla, M. Gribaudo}{ECMS 2026}
+	\pub{Efficient Soft Body Simulation for Real-Time Applications: A GPU-Based XPBD Approach}{D. Alessi, \me, E. Lucania, P. Piazzolla, G. Colombo, M. Gribaudo}{ASME IDETC-CIE 2025}\ \badge{Best Paper Award}
+	\pub{Collaborative Virtual Reality Framework for Surgical Training and Simulation}{\me, F. Guerrera, P. Piazzolla, G. Colombo, E. Ruffini, M. Gribaudo}{ECMS 2025}
+	% \pub{Ray Distribution Aware Heuristics for BVHs Construction in Ray Tracing}{L. Falcone, \me, P. Piazzolla, M. Gribaudo}{ECMS 2025}
+	\pub{Training Attention Skills in Individuals with Neurodevelopmental Disorders Using Virtual Reality and Eye-Tracking Technology}{A. Patti, F. Vona, A. Barberio, \me, I. Crusco, M. Mores, F. Garzotto}{HCII 2024, LNCS 14697}\ \badge{Best Paper Award}
+	\pub{Lung Operation Training in Low-Cost Virtual Reality Simulation Environments}{\me, F. Guerrera, P. Piazzolla, G. Colombo, M. Gribaudo}{ECMS 2024}
+	% \pub{Extended Position-Based Dynamics Virtual Reality Simulator for Thoracoscopic Surgery Training}{P. Piazzolla, M. Rossoni, \me, E. Lucania, G. Colombo, F. Guerrera, M. Gribaudo}{ASME IDETC-CIE 2024}
+\end{enumerate}\par}
+
+\end{document}

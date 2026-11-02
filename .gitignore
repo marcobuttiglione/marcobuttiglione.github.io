@@ -2,6 +2,8 @@
 dist/
 # generated types
 .astro/
+# LaTeX build of the resume (npm run cv copies the PDF to public/)
+cv/build/
 
 # dependencies
 node_modules/
