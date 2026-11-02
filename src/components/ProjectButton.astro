@@ -23,42 +23,39 @@ const buttonLabel = label || defaultLabels[type] || defaultLabels.default;
 const icon = icons[type] || icons.default;
 ---
 
-<a href={href} target="_blank" class={`project-button ${type}`}>
+<a href={href} target="_blank" rel="noopener" class={`project-button ${type}`}>
 	<span class="icon" set:html={icon} />
-	<span class="label">{buttonLabel}</span>
+	<span class="text">{buttonLabel}</span>
 </a>
 
 <style>
 	.project-button {
 		display: inline-flex;
 		align-items: center;
-		gap: 0.5rem;
-		padding: 0.6rem 1.2rem;
-		border-radius: 8px;
+		gap: 0.55rem;
+		padding: 0.75rem 1.3rem;
+		border-radius: 99px;
+		border: 1px solid rgba(255, 255, 255, 0.12);
 		text-decoration: none;
 		font-weight: 600;
-		transition: transform 0.2s, box-shadow 0.2s;
-		margin-top: 1rem;
-		margin-bottom: 1rem;
-		margin-right: 0.5rem;
+		font-size: 0.95rem;
+		transition: transform 0.2s, background-color 0.2s;
+		margin: 1rem 0.5rem 1rem 0;
 	}
 
 	.project-button:hover {
 		transform: translateY(-2px);
-		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 		text-decoration: none;
 	}
 
-	.project-button.github {
-		background-color: #24292e;
-		color: white;
-	}
-
+	.project-button.github,
 	.project-button.steam {
-		background-color: #171a21;
+		background-color: #141518;
 		color: white;
 	}
 
+	.project-button.github:hover,
+	.project-button.steam:hover,
 	.project-button.default {
 		background-color: var(--accent);
 		color: white;
@@ -67,5 +64,10 @@ const icon = icons[type] || icons.default;
 	.icon {
 		display: flex;
 		align-items: center;
+	}
+
+	.icon :global(svg) {
+		width: 18px;
+		height: 18px;
 	}
 </style>

@@ -1,396 +1,291 @@
 ---
-import BaseHead from '../components/BaseHead.astro';
-import Footer from '../components/Footer.astro';
-import Header from '../components/Header.astro';
-import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
 import { Image } from 'astro:assets';
+import Site from '../layouts/Site.astro';
+import SplatPortrait from '../components/SplatPortrait.astro';
 import profileImage from '../assets/profile_image.jpg';
-import '../styles/home.css';
+import { SITE_TITLE, SITE_DESCRIPTION, LINKS } from '../consts';
+import { getProjects } from '../lib/projects';
 import { getPublications } from '../lib/publications';
 import { careerData } from '../data/career';
-import { getCollection } from 'astro:content';
 
-const projects = await getCollection('projects');
-const projectsData = projects.sort((a, b) => {
-	if (a.data.inDevelopment && !b.data.inDevelopment) return -1;
-	if (!a.data.inDevelopment && b.data.inDevelopment) return 1;
-	return b.data.pubDate.valueOf() - a.data.pubDate.valueOf();
-});
+const projects = await getProjects();
+const publications = getPublications();
+const featured = publications.filter((p) => p.metadata.featured);
+const stats = {
+	papers: publications.length,
+	awards: publications.filter((p) => p.metadata.extraText).length,
+	projects: projects.length,
+};
 
-const featuredPublications = getPublications().filter((pub) => pub.metadata.featured);
-
-const groupedCareerData = careerData.reduce((acc, job) => {
-	const lastGroup = acc[acc.length - 1];
-	if (lastGroup && lastGroup.company === job.company) {
-		lastGroup.jobs.push(job);
-	} else {
-		acc.push({ company: job.company, jobs: [job] });
-	}
-	return acc;
+const interests = ['Computer Graphics', 'Extended Reality', 'Gaussian Splatting', 'Game Development', 'Human Computer Interaction'];
+const tools = ['Unity', 'Unreal Engine', 'C#', 'OpenXR', 'XPBD'];
+// Icon paths: 24x24 stroke icons (Lucide)
+const socials = [
+	{ name: 'GitHub', kind: 'Code', href: LINKS.github, external: true, icon: '<path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/>' },
+	{ name: 'LinkedIn', kind: 'Career', href: LINKS.linkedin, external: true, icon: '<path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-4 0v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/>' },
+	{ name: 'Scholar', kind: 'Research', href: LINKS.scholar, external: true, icon: '<path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/>' },
+	{ name: 'Email', kind: 'Contact', href: LINKS.email, external: false, icon: '<rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>' },
+];
+// Consecutive roles at the same organisation are shown together under one heading
+const careerGroups = careerData.reduce((groups, job) => {
+	const last = groups.at(-1);
+	if (last && last.company === job.company) last.jobs.push(job);
+	else groups.push({ company: job.company, jobs: [job] });
+	return groups;
 }, [] as { company: string; jobs: typeof careerData }[]);
+
+const education = [
+	{ degree: 'PhD in Computer Science and Engineering', school: 'Politecnico di Milano', year: 'Current' },
+	{ degree: 'M.Sc. in Computer Science and Engineering', school: 'Politecnico di Milano', year: '2024' },
+	{ degree: 'B.Sc. in Computer Science and Automation Engineering', school: 'Politecnico di Bari', year: '2021' },
+];
 ---
 
-<!doctype html>
-<html lang="en">
-	<head>
-		<BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
+<Site title={SITE_TITLE} description={SITE_DESCRIPTION} image={profileImage}>
+	<section class="hero">
+		<div>
+			<span class="label">Computer Graphics · XR · Games</span>
+			<h1>Marco Domenico Buttiglione<span>.</span></h1>
+			<p>PhD candidate at Politecnico di Milano and game developer. I build <b>real-time rendering</b>, <b>Gaussian Splatting</b> and <b>physics-based simulation</b> for immersive XR, and I make games.</p>
+			<div class="actions">
+				<a href="#work" class="pill dark">See my work</a>
+				<a href={LINKS.email} class="pill">Get in touch</a>
+			</div>
+		</div>
+		<SplatPortrait />
+	</section>
 
-	</head>
-	<body id="top" class="home">
-		<Header />
-		<main>
-			<section id="about">
-				<div class="hero-content">
-					
-					<!-- Left Column: Profile -->
-					<div class="profile-sidebar">
-						<Image src={profileImage} alt="Marco Buttiglione" class="profile-image" />
-						<div class="profile-info">
-							<h1>Marco Domenico Buttiglione</h1>
-							<p class="role">PhD Candidate &<br>Game Developer</p>
-							
-							<div class="social-icons">
-								<a href="mailto:marcodomenico.buttiglione@gmail.com" aria-label="Email">
-									<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"></rect><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path></svg>
-								</a>
-								<a href="https://scholar.google.com/citations?user=gbSBgYwAAAAJ" target="_blank" aria-label="Google Scholar">
-									<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
-								</a>
-								<a href="https://www.linkedin.com/in/marco-dom-buttiglione/" target="_blank" aria-label="LinkedIn">
-									<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg>
-								</a>
-								<a href="https://github.com/marcobuttiglione" target="_blank" aria-label="GitHub">
-									<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>
-								</a>
-							</div>
-						</div>
-						<a href="#main-content" class="scroll-down-arrow" aria-label="Scroll down">
-							<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 13l5 5 5-5M7 6l5 5 5-5"/></svg>
-						</a>
-					</div>
+	<div class="bento">
+		<div class="tile now">
+			<span class="label"><span class="dot"></span>Currently</span>
+			<div><strong>Visiting Researcher at EVL</strong><small>University of Illinois Chicago</small></div>
+		</div>
+		<div class="tile stats">
+			<div><strong>{stats.papers}</strong><span class="label">Papers</span></div>
+			<div><strong class="hl">{stats.awards}</strong><span class="label"><span class="wide">Best paper </span>Awards</span></div>
+			<div><strong>{stats.projects}</strong><span class="label">Projects</span></div>
+		</div>
+		<div class="tile socials">
+			{socials.map((l) => (
+				<a href={l.href} target={l.external ? '_blank' : undefined} rel={l.external ? 'noopener' : undefined}>
+					<svg class="icon" viewBox="0 0 24 24" aria-hidden="true" set:html={l.icon} />
+					<span><span class="label">{l.kind}</span>{l.name} ↗</span>
+				</a>
+			))}
+		</div>
+		<div class="tile focus">
+			<div><span class="label">Interests</span><div class="chips">{interests.map((i) => <span>{i}</span>)}</div></div>
+			<div><span class="label">Tools</span><div class="chips">{tools.map((t) => <span>{t}</span>)}</div></div>
+		</div>
+	</div>
 
-					<!-- Right Column: Content -->
-					<div id="main-content" class="main-content">
-						<section class="about-section">
-							<h2>About Me</h2>
-							<p>
-								I am a <strong>PhD Candidate</strong> in Computer Science and Engineering at Politecnico di Milano (NECSTLab) and a <strong>Game Developer</strong>. I am currently a <strong>Visiting Researcher</strong> at the Electronic Visualization Laboratory (EVL), University of Illinois Chicago.
-							</p>
-							<p>
-								My research focuses on <strong>immersive XR training systems</strong> for <strong>medical applications</strong>, from <strong>surgical simulation</strong> to <strong>VR rehabilitation</strong> with embodied AI coaching. My work spans <strong>real-time rendering</strong>, <strong>Gaussian Splatting</strong> and <strong>game development</strong>.
-							</p>
-							<p>
-								Alongside my PhD, I lead the development at <strong>Rewind Studios</strong>, a professional collective focused on <strong>interactive and gamified experiences</strong>, as well as the puzzle platformer <em>Paradox!</em>.
-							</p>
-						</section>
+	<div class="section-title" id="about"><h2><span class="idx">01</span>About</h2></div>
+	<div class="about">
+		<div class="tile bio">
+			<p>I am a <b>PhD Candidate</b> in Computer Science and Engineering at Politecnico di Milano (NECSTLab) and a <b>Game Developer</b>. I am currently a <b>Visiting Researcher</b> at the Electronic Visualization Laboratory (EVL), University of Illinois Chicago.</p>
+			<p>My research focuses on <b>immersive XR training systems</b> for <b>medical applications</b>, from <b>surgical simulation</b> to <b>VR rehabilitation</b> with embodied AI coaching. My work spans <b>real-time rendering</b>, <b>Gaussian Splatting</b> and <b>game development</b>.</p>
+			<p>Alongside my PhD, I lead the development at <b>Rewind Studios</b>, a professional collective focused on <b>interactive and gamified experiences</b>, as well as the puzzle platformer <a href="/projects/paradox"><em>Paradox!</em></a>.</p>
+		</div>
+		<div class="tile">
+			<span class="label">Education</span>
+			<ul class="edu">
+				{education.map((e) => (
+					<li><strong>{e.degree}</strong><span>{e.school}</span><span class="label">{e.year}</span></li>
+				))}
+			</ul>
+		</div>
+	</div>
 
-						<div class="info-grid">
-							<section class="info-column">
-								<h3>Interests</h3>
-								<ul class="interests-list">
-									<li>Computer Graphics</li>
-									<li>Extended Reality</li>
-									<li>Gaussian Splatting</li>
-									<li>Game Development</li>
-									<li>Human Computer Interaction</li>
-								</ul>
-							</section>
-
-							<section class="info-column">
-								<h3>Education</h3>
-								<ul class="education-list">
-									<li class="education-item">
-										<div class="education-icon">
-											<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
-										</div>
-										<div class="education-details">
-											<strong>PhD in Computer Science and Engineering</strong>
-											<small>Politecnico di Milano, Current</small>
-										</div>
-									</li>
-									<li class="education-item">
-										<div class="education-icon">
-											<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
-										</div>
-										<div class="education-details">
-											<strong>M.Sc. in Computer science and engineering</strong>
-											<small>Politecnico di Milano, 2024</small>
-										</div>
-									</li>
-									<li class="education-item">
-										<div class="education-icon">
-											<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
-										</div>
-										<div class="education-details">
-											<strong>B.Sc. in Computer Science and Automation Engineering</strong>
-											<small>Politecnico di Bari, 2021</small>
-										</div>
-									</li>
-								</ul>
-							</section>
-						</div>
-					</div>
+	<div class="section-title" id="work"><h2><span class="idx">02</span>Selected work</h2><a href="/projects">All projects</a></div>
+	<div class="projects">
+		{projects.map((p, i) => (
+			<a href={`/projects/${p.id}`} class="proj">
+				{p.data.heroImage && typeof p.data.heroImage !== 'string' && (
+					<Image src={p.data.heroImage} alt="" width={i === 0 ? 1200 : 700} />
+				)}
+				{p.data.inDevelopment && <span class="tag">In development</span>}
+				<div class="info">
+					<h3>{p.data.title}</h3>
+					<span class="meta">{p.data.company}</span>
+					<div class="tags">{p.data.tags?.join(' · ')}</div>
 				</div>
-			</section>
+			</a>
+		))}
+	</div>
 
-			<section class="full-width-section alternate-bg">
-				<div class="section-content">
-					<h2>Career</h2>
-					<ul class="career-list">
-						{groupedCareerData.map((group) => (
-							<li class="career-company-group">
-								{group.jobs.map((job) => (
-									<div class="career-item">
-										<div class="career-details">
-											<strong>{job.role} @ {job.company}</strong>
-											<small>{job.startDate} - {job.endDate} | {job.location} {job.type ? `(${job.type})` : ''}</small>
-											{job.description && <p>{job.description}</p>}
-										</div>
-									</div>
-								))}
+	<div class="section-title" id="experience"><h2><span class="idx">03</span>Experience</h2><a href={LINKS.cv} download>Download CV</a></div>
+	<div class="tile xp-tile">
+		<ul class="xp">
+			{careerGroups.map(({ company, jobs }) => jobs.length === 1 ? (
+				<li class="job">
+					<span class="label">{jobs[0].startDate} - {jobs[0].endDate}</span>
+					<div>
+						<strong>{jobs[0].role}</strong>
+						<span class="company">{company}</span>
+						<span class="where">{jobs[0].location}{jobs[0].type && ` · ${jobs[0].type}`}</span>
+					</div>
+					{jobs[0].description && <p>{jobs[0].description}</p>}
+				</li>
+			) : (
+				<li class="org">
+					<div class="job org-head">
+						<span class="label">{jobs.at(-1)!.startDate} - {jobs[0].endDate}</span>
+						<div>
+							<span class="company">{company}</span>
+							<span class="where">{jobs[0].location} · {jobs.length} roles</span>
+						</div>
+					</div>
+					<ol class="roles">
+						{jobs.map((job) => (
+							<li class="job role">
+								<span class="label">{job.startDate} - {job.endDate}</span>
+								<div>
+									<strong>{job.role}</strong>
+									{job.type && <span class="where">{job.type}</span>}
+								</div>
+								{job.description && <p>{job.description}</p>}
 							</li>
 						))}
-					</ul>
-					<a href="/ButtiglioneMARCODOMENICO_Resume.pdf" class="cv-button" download>Download CV</a>
+					</ol>
+				</li>
+			))}
+		</ul>
+	</div>
+
+	<div class="section-title" id="research"><h2><span class="idx">04</span>Research</h2><a href="/publications">All {stats.papers} publications</a></div>
+	<div class="papers">
+		{featured.map((p) => (
+			<a href={p.doi ? `https://doi.org/${p.doi}` : `/publications#${p.id}`} class="paper" target={p.doi ? '_blank' : undefined} rel={p.doi ? 'noopener' : undefined}>
+				<div class="fig">{p.metadata.image && <Image src={p.metadata.image} alt="" width={640} />}</div>
+				<div class="paper-body">
+					{p.metadata.extraText && <span class="award">★ {p.metadata.extraText}</span>}
+					<strong>{p.title}</strong>
+					<span>{p.venue}, {p.year}</span>
 				</div>
-			</section>
+			</a>
+		))}
+	</div>
+</Site>
 
-			<section class="full-width-section projects-section">
-				<div class="section-content">
-					<h2>Projects</h2>
-					
-					<div class="carousel-container">
-						<div class="carousel-track">
-							{projectsData.map((project) => (
-								<div class="project-card-link">
-									<div class="project-card">
-										<div class="image-container">
-											{project.data.heroImage && (
-                                                typeof project.data.heroImage === 'string' ? (
-                                                    <img src={project.data.heroImage} alt={project.data.title} class="project-image" />
-                                                ) : (
-                                                    <Image src={project.data.heroImage} alt={project.data.title} class="project-image" />
-                                                )
-                                            )}
-											{project.data.inDevelopment && <span class="status-badge">In Development</span>}
-										</div>
-										<div class="project-content">
-											<h3><a href={`/projects/${project.id}`}>{project.data.title}</a></h3>
-											{project.data.company && <span class="project-company">{project.data.company}</span>}
-											<p>{project.data.description}</p>
-											{project.data.tags && (
-												<div class="project-tags">
-													{project.data.tags.map((tag: string) => <span class="tag">{tag}</span>)}
-												</div>
-											)}
-										</div>
-									</div>
-								</div>
-							))}
-							{/* Duplicate for infinite scroll effect */}
-							{projectsData.map((project) => (
-								<div class="project-card-link" aria-hidden="true">
-									<div class="project-card">
-										<div class="image-container">
-											{project.data.heroImage && (
-                                                typeof project.data.heroImage === 'string' ? (
-                                                    <img src={project.data.heroImage} alt={project.data.title} class="project-image" />
-                                                ) : (
-                                                    <Image src={project.data.heroImage} alt={project.data.title} class="project-image" />
-                                                )
-                                            )}
-											{project.data.inDevelopment && <span class="status-badge">In Development</span>}
-										</div>
-										<div class="project-content">
-											<h3><a href={`/projects/${project.id}`} tabindex="-1">{project.data.title}</a></h3>
-											{project.data.company && <span class="project-company">{project.data.company}</span>}
-											<p>{project.data.description}</p>
-											{project.data.tags && (
-												<div class="project-tags">
-													{project.data.tags.map((tag: string) => <span class="tag">{tag}</span>)}
-												</div>
-											)}
-										</div>
-									</div>
-								</div>
-							))}
-						</div>
-					</div>
+<style>
+	/* Hero: text on the left, 3D portrait on the right */
+	.hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 0.95fr); gap: 3rem; align-items: center; padding: 3.5rem 0 1rem; }
+	.hero h1 { font-size: clamp(2.8rem, 5.6vw, 5.2rem); line-height: 0.93; letter-spacing: -0.05em; font-weight: 800; margin: 1.1rem 0 1.4rem; }
+	.hero h1 span { color: var(--accent); }
+	.hero p { font-size: 1.18rem; color: var(--text); margin: 0; max-width: 520px; }
+	.hero p b { color: var(--ink); font-weight: 600; }
+	.actions { display: flex; gap: 0.6rem; margin-top: 2rem; flex-wrap: wrap; }
 
-					<div class="carousel-controls">
-						<button class="carousel-btn prev" aria-label="Previous projects">
-							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
-						</button>
-						<button class="carousel-btn next" aria-label="Next projects">
-							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
-						</button>
-					</div>
+	/* Bento */
+	.bento { display: grid; grid-template-columns: repeat(4, 1fr); grid-auto-rows: minmax(140px, auto); gap: 14px; margin-top: 3rem; }
+	.now { background: var(--surface-dark); color: #fff; border: 0; display: flex; flex-direction: column; justify-content: space-between; gap: 1rem; }
+	.now .label { color: var(--surface-dark-muted); display: flex; align-items: center; gap: 0.5rem; }
+	.now .dot { width: 8px; height: 8px; border-radius: 50%; background: #3ddc84; box-shadow: 0 0 0 4px rgba(61, 220, 132, 0.2); }
+	.now strong { font-size: 1.3rem; line-height: 1.2; display: block; margin-bottom: 0.2rem; }
+	.now small { color: var(--surface-dark-muted); }
+	.stats { grid-column: span 2; display: grid; grid-template-columns: repeat(3, 1fr); align-content: center; align-items: start; }
+	.stats div { padding-left: 1.2rem; border-left: 1px solid var(--line); }
+	.stats div:first-child { border-left: 0; padding-left: 0; }
+	.stats strong { display: block; font-size: 3rem; font-weight: 800; letter-spacing: -0.05em; line-height: 1; margin-bottom: 0.3rem; }
+	.stats strong.hl { color: var(--accent); }
+	.socials { grid-row: span 2; display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding: 6px; }
+	.socials a { display: flex; flex-direction: column; justify-content: space-between; gap: 1rem; padding: 0.85rem 0.9rem; border-radius: 16px; background: var(--bg); font-weight: 600; font-size: 0.92rem; transition: background 0.2s, color 0.2s; }
+	.socials a > span { display: grid; }
+	.socials .icon { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; color: var(--accent); transition: color 0.2s; }
+	.socials a:hover { background: var(--accent); color: #fff; }
+	.socials a:hover .icon { color: #fff; }
+	.socials a:hover .label { color: rgba(255, 255, 255, 0.8); }
+	.focus { grid-column: span 3; display: grid; grid-template-columns: 1.3fr 1fr; gap: 1.6rem; }
+	.focus .chips { margin-top: 0.9rem; }
 
-					<a href="/projects" class="read-more">View all projects &rarr;</a>
-				</div>
-			</section>
+	/* About */
+	.about { display: grid; grid-template-columns: 1.6fr 1fr; gap: 14px; }
+	.bio { display: flex; flex-direction: column; justify-content: center; }
+	.bio p { font-size: 1.08rem; color: var(--text); margin: 0 0 1rem; }
+	.bio p:last-child { margin-bottom: 0; }
+	.bio b { color: var(--ink); font-weight: 600; }
+	.bio a { color: var(--ink); border-bottom: 1px solid var(--accent); }
+	.edu { list-style: none; margin: 0.5rem 0 0; padding: 0; }
+	.edu li { display: grid; padding: 0.9rem 0; border-bottom: 1px solid var(--line); }
+	.edu li:last-child { border-bottom: 0; padding-bottom: 0; }
+	.edu strong { line-height: 1.3; }
+	.edu span { color: var(--muted); font-size: 0.92rem; }
+	.edu .label { color: var(--accent); margin-top: 0.2rem; }
 
-			<section class="full-width-section alternate-bg">
-				<div class="section-content">
-					<h2>Selected Publications</h2>
-					<div class="preview-item">
-						<ul class="publication-list-preview">
-							{featuredPublications.map((pub) => (
-								<li>
-									<strong>{pub.title}</strong>
-									{pub.metadata.extraText && <span class="extra-text">{pub.metadata.extraText}</span>}
-									<br/>
-									<span class="pub-authors-preview">{pub.authors}</span>
-									<br/>
-									<em>{pub.venue}, {pub.year}</em>
-								</li>
-							))}
-						</ul>
-						<a href="/publications" class="read-more">View all publications &rarr;</a>
-					</div>
-				</div>
-			</section>
-		</main>
-		<Footer />
-		<script>
-			const track = document.querySelector('.carousel-track') as HTMLElement | null;
-			const container = document.querySelector('.carousel-container') as HTMLElement | null;
-			const prevBtn = document.querySelector('.carousel-btn.prev');
-			const nextBtn = document.querySelector('.carousel-btn.next');
+	/* Projects */
+	.projects { display: grid; grid-template-columns: repeat(3, 1fr); grid-auto-rows: 250px; gap: 14px; }
+	.proj { border-radius: var(--radius); overflow: hidden; position: relative; background: var(--line); }
+	.proj:first-child { grid-column: span 2; grid-row: span 2; }
+	.proj img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.7s cubic-bezier(0.2, 0.7, 0.2, 1); }
+	.proj:hover img { transform: scale(1.06); }
+	.proj .info { position: absolute; inset: auto 0 0 0; padding: 1.3rem 1.4rem; color: #fff; background: linear-gradient(transparent, rgba(12, 10, 8, 0.82)); }
+	.proj h3 { margin: 0; font-size: 1.4rem; letter-spacing: -0.02em; line-height: 1.1; }
+	.proj:first-child h3 { font-size: 2.2rem; }
+	.proj .meta { font-size: 0.85rem; opacity: 0.8; }
+	.proj .tags { font-family: var(--mono); font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.05em; color: #ffc3a8; max-height: 0; opacity: 0; overflow: hidden; transition: max-height 0.4s, opacity 0.4s, margin 0.4s; }
+	.proj:hover .tags, .proj:focus-visible .tags { max-height: 3rem; opacity: 1; margin-top: 0.5rem; }
+	.proj .tag { position: absolute; top: 1rem; left: 1rem; background: rgba(255, 255, 255, 0.92); color: #141518; font-family: var(--mono); font-size: 0.66rem; text-transform: uppercase; letter-spacing: 0.05em; padding: 0.3rem 0.65rem; border-radius: 99px; display: flex; gap: 0.4rem; align-items: center; }
+	.proj .tag::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
 
-			if (track && container) {
-				let scrollPos = 0;
-				let isDragging = false;
-				let startX = 0;
-				let prevTranslate = 0;
-				let isPaused = false;
-				let scrollTargetDelta = 0;
-				const autoScrollSpeed = 0.5;
+	/* Experience: one CV-style row per job; roles at the same organisation share a heading and a timeline */
+	.xp-tile { padding-top: 0.6rem; padding-bottom: 0.6rem; }
+	.xp, .roles { list-style: none; margin: 0; padding: 0; }
+	.xp > li { border-bottom: 1px solid var(--line); }
+	.xp > li:last-child { border-bottom: 0; }
+	.job { display: grid; grid-template-columns: 170px minmax(0, 1fr) minmax(0, 1.5fr); gap: 1.5rem; padding: 1.2rem 0; }
+	.job > .label { padding-top: 0.2rem; }
+	.xp strong { font-size: 1.05rem; display: block; line-height: 1.3; }
+	.xp .company { display: block; color: var(--accent); font-weight: 500; font-size: 0.95rem; }
+	.org-head .company { font-size: 1.05rem; font-weight: 600; }
+	.xp .where { display: block; color: var(--muted); font-size: 0.82rem; }
+	.xp p { margin: 0; color: var(--muted); font-size: 0.92rem; line-height: 1.55; }
+	.org-head { padding-bottom: 0.3rem; }
+	.role { padding: 0.9rem 0; }
+	.role:last-child { padding-bottom: 1.3rem; }
+	.role > div { position: relative; padding-left: 1.5rem; }
+	.role > div::before { content: ''; position: absolute; left: 0; top: 0.4rem; width: 9px; height: 9px; border-radius: 50%; background: var(--card); border: 2px solid var(--accent); }
+	.role > div::after { content: ''; position: absolute; left: 3.5px; top: 1.05rem; bottom: -2.2rem; width: 2px; background: var(--line); }
+	.role:last-child > div::after { display: none; }
 
-				function getSingleSetWidth() {
-					return track!.scrollWidth / 2;
-				}
+	/* Research: featured papers as cards with their figure */
+	.papers { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+	.paper { display: flex; flex-direction: column; background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; transition: border-color 0.25s, transform 0.25s; }
+	.paper:hover { border-color: var(--ink); transform: translateY(-3px); }
+	.fig { aspect-ratio: 16 / 10; background: var(--line); overflow: hidden; }
+	.fig img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.7s cubic-bezier(0.2, 0.7, 0.2, 1); }
+	.paper:hover .fig img { transform: scale(1.05); }
+	.paper-body { display: flex; flex-direction: column; align-items: start; gap: 0.5rem; padding: 1.2rem 1.4rem 1.4rem; flex: 1; }
+	.paper-body strong { line-height: 1.35; font-size: 1.05rem; }
+	.paper:hover strong { color: var(--accent); }
+	.paper-body > span:last-child { margin-top: auto; font-size: 0.85rem; color: var(--muted); }
 
-				function animate() {
-					const maxScroll = getSingleSetWidth();
-					
-					if (!isDragging) {
-						if (Math.abs(scrollTargetDelta) > 0.5) {
-							const step = scrollTargetDelta * 0.1;
-							scrollPos += step;
-							scrollTargetDelta -= step;
-						} else {
-							scrollTargetDelta = 0;
-							if (!isPaused) {
-								scrollPos += autoScrollSpeed;
-							}
-						}
-					}
-
-					// Handle wrapping
-					if (scrollPos >= maxScroll) {
-						scrollPos = scrollPos % maxScroll;
-					} else if (scrollPos < 0) {
-						scrollPos = maxScroll + (scrollPos % maxScroll);
-					}
-
-					track!.style.transform = `translateX(-${scrollPos}px)`;
-					requestAnimationFrame(animate);
-				}
-
-				// Start animation
-				requestAnimationFrame(animate);
-
-				// Pause on hover
-				container.addEventListener('mouseenter', () => isPaused = true);
-				container.addEventListener('mouseleave', () => {
-					if (!isDragging) isPaused = false;
-				});
-
-				// Drag functionality
-				track.addEventListener('mousedown', (e) => {
-					const me = e as MouseEvent;
-					isDragging = true;
-					isPaused = true;
-					scrollTargetDelta = 0;
-					startX = me.pageX;
-					prevTranslate = scrollPos;
-					track!.style.cursor = 'grabbing';
-				});
-
-				window.addEventListener('mouseup', () => {
-					if (isDragging) {
-						isDragging = false;
-						isPaused = false;
-						track!.style.cursor = 'grab';
-					}
-				});
-
-				window.addEventListener('mousemove', (e) => {
-					if (!isDragging) return;
-					const me = e as MouseEvent;
-					me.preventDefault();
-					const currentX = me.pageX;
-					const diff = startX - currentX;
-					scrollPos = prevTranslate + diff;
-				});
-
-				// Touch events
-				track.addEventListener('touchstart', (e) => {
-					const te = e as TouchEvent;
-					isDragging = true;
-					isPaused = true;
-					scrollTargetDelta = 0;
-					startX = te.touches[0].pageX;
-					prevTranslate = scrollPos;
-				});
-
-				window.addEventListener('touchend', () => {
-					if (isDragging) {
-						isDragging = false;
-						setTimeout(() => { isPaused = false; }, 1000);
-					}
-				});
-
-				window.addEventListener('touchmove', (e) => {
-					if (!isDragging) return;
-					const te = e as TouchEvent;
-					const currentX = te.touches[0].pageX;
-					const diff = startX - currentX;
-					scrollPos = prevTranslate + diff;
-				});
-
-				// Buttons
-				if (prevBtn) {
-					prevBtn.addEventListener('click', () => {
-						scrollTargetDelta -= 332; // 300px card + 32px gap (2rem)
-					});
-				}
-
-				if (nextBtn) {
-					nextBtn.addEventListener('click', () => {
-						scrollTargetDelta += 332;
-					});
-				}
-			}
-		</script>
-		<script>
-			const arrow = document.querySelector('.scroll-down-arrow');
-			if (arrow) {
-				window.addEventListener('scroll', () => {
-					if (window.scrollY > 20) {
-						arrow.classList.add('hidden');
-					} else {
-						arrow.classList.remove('hidden');
-					}
-				});
-
-				arrow.addEventListener('click', (e) => {
-					// Allow default anchor behavior (smooth scroll via CSS or browser)
-					// but hide the arrow immediately
-					arrow.classList.add('hidden');
-				});
-			}
-		</script>
-	</body>
-</html>
+	@media (max-width: 900px) {
+		.hero { grid-template-columns: 1fr; gap: 2rem; padding-top: 2.5rem; }
+		.bento, .projects { grid-template-columns: 1fr 1fr; }
+		.now, .stats, .focus, .socials { grid-column: span 2; }
+		.socials { grid-row: span 1; grid-template-columns: repeat(4, 1fr); }
+		.focus { grid-template-columns: 1fr; }
+		.about { grid-template-columns: 1fr; }
+		.job { grid-template-columns: 140px 1fr; }
+		.job p { grid-column: 2; }
+		.papers { grid-template-columns: 1fr 1fr; }
+	}
+	@media (max-width: 560px) {
+		.projects { grid-template-columns: 1fr; grid-auto-rows: 220px; }
+		.proj:first-child { grid-column: auto; grid-row: span 1; }
+		.proj:first-child h3 { font-size: 1.6rem; }
+		.socials { grid-template-columns: 1fr 1fr; }
+		.stats strong { font-size: 2.3rem; }
+		.stats div { padding-left: 0.8rem; }
+		.stats .wide { display: none; }
+		.job { grid-template-columns: 1fr; gap: 0.35rem; }
+		.job p { grid-column: auto; }
+		.role { position: relative; padding-left: 1.5rem; }
+		.role > div { position: static; padding-left: 0; }
+		.role::before { content: ''; position: absolute; left: 0; top: 1.25rem; width: 9px; height: 9px; border-radius: 50%; background: var(--card); border: 2px solid var(--accent); }
+		.role::after { content: ''; position: absolute; left: 3.5px; top: 1.95rem; bottom: -1.25rem; width: 2px; background: var(--line); }
+		.role:last-child::after { display: none; }
+		.role > div::before, .role > div::after { display: none; }
+		.papers { grid-template-columns: 1fr; }
+	}
+</style>

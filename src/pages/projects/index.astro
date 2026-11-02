@@ -1,144 +1,82 @@
 ---
+// Projects list with category filter
 import { Image } from 'astro:assets';
-import { getCollection } from 'astro:content';
-import BaseHead from '../../components/BaseHead.astro';
-import Footer from '../../components/Footer.astro';
-import FormattedDate from '../../components/FormattedDate.astro';
-import Header from '../../components/Header.astro';
-import { SITE_DESCRIPTION, SITE_TITLE } from '../../consts';
+import Site from '../../layouts/Site.astro';
+import { SITE_TITLE } from '../../consts';
+import { getProjects, projectCategory, projectStatus } from '../../lib/projects';
 
-const projects = (await getCollection('projects')).sort((a, b) => {
-	if (a.data.inDevelopment && !b.data.inDevelopment) return -1;
-	if (!a.data.inDevelopment && b.data.inDevelopment) return 1;
-	return b.data.pubDate.valueOf() - a.data.pubDate.valueOf();
-});
+const projects = await getProjects();
+const count = (c: string) => projects.filter((p) => projectCategory(p) === c).length;
 ---
 
-<!doctype html>
-<html lang="en">
-	<head>
-		<BaseHead title={`Projects - ${SITE_TITLE}`} description={SITE_DESCRIPTION} />
-		<style>
-			main {
-				width: 960px;
-			}
-			ul {
-				display: flex;
-				flex-wrap: wrap;
-				gap: 2rem;
-				list-style-type: none;
-				margin: 0;
-				padding: 0;
-			}
-			ul li {
-				width: calc(50% - 1rem);
-			}
-			ul li * {
-				text-decoration: none;
-				transition: 0.2s ease;
-			}
-			ul li:first-child {
-				width: 100%;
-				margin-bottom: 1rem;
-				text-align: center;
-			}
-			ul li:first-child img {
-				width: 100%;
-			}
-			ul li:first-child .title {
-				font-size: 2.369rem;
-			}
-			ul li img {
-				margin-bottom: 0.5rem;
-				border-radius: 12px;
-				width: 100%;
-				height: auto;
-				aspect-ratio: 720 / 360;
-				object-fit: cover;
-			}
-			ul li a {
-				display: block;
-			}
-			.title {
-				margin: 0;
-				color: rgb(var(--black));
-				line-height: 1;
-			}
-			.date {
-				margin: 0;
-				color: rgb(var(--gray));
-			}
-			ul li a:hover h4,
-			ul li a:hover .date {
-				color: rgb(var(--accent));
-			}
-			ul a:hover img {
-				box-shadow: var(--box-shadow);
-			}
-			.image-container {
-				position: relative;
-			}
-			.status-badge {
-				position: absolute;
-				top: 10px;
-				right: 10px;
-				background-color: #ff9800;
-				color: white;
-				font-size: 0.7rem;
-				font-weight: bold;
-				padding: 0.2rem 0.5rem;
-				border-radius: 4px;
-				box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-				text-transform: uppercase;
-			}
-			@media (max-width: 720px) {
-				ul {
-					gap: 2em;
-				}
-				ul li {
-					width: 100%;
-					text-align: center;
-				}
-				ul li:first-child {
-					margin-bottom: 0;
-				}
-			}
-		</style>
-	</head>
-	<body>
-		<Header />
-		<main>
-			<section>
-				<ul>
-					{
-						projects.map((project) => (
-							<li>
-								<a href={`/projects/${project.id}/`}>
-									<div class="image-container">
-										{project.data.heroImage && (
-                                            typeof project.data.heroImage === 'string' ? (
-                                                <img width={720} height={360} src={project.data.heroImage} alt="" />
-                                            ) : (
-                                                <Image width={720} height={360} src={project.data.heroImage} alt="" />
-                                            )
-                                        )}
-										{project.data.inDevelopment && <span class="status-badge">In Development</span>}
-									</div>
-									<h4 class="title">{project.data.title}</h4>
-									{project.data.inDevelopment ? (
-										<p class="date">In Development</p>
-									) : (
-										<p class="date">
-											<FormattedDate date={project.data.pubDate} />
-										</p>
-									)}
-								</a>
-							</li>
-						))
-					}
-				</ul>
-			</section>
-		</main>
-		<Footer />
-	</body>
-</html>
+<Site title={`Projects - ${SITE_TITLE}`} description="Games, research prototypes and XR training systems by Marco Domenico Buttiglione.">
+	<header class="page-head">
+		<span class="label">Work</span>
+		<h1>Projects<span>.</span></h1>
+		<p>Commercial games and research systems: XR training for medicine, real-time soft-body simulation and the frameworks behind them.</p>
+	</header>
+
+	<div class="toolbar" role="group" aria-label="Filter projects">
+		<button class="on" data-filter="all">All <span>{projects.length}</span></button>
+		<button data-filter="games">Games <span>{count('games')}</span></button>
+		<button data-filter="research">Research <span>{count('research')}</span></button>
+	</div>
+
+	<div class="grid">
+		{projects.map((p) => (
+			<a href={`/projects/${p.id}`} class="card" data-category={projectCategory(p)}>
+				<div class="media">
+					{p.data.heroImage && typeof p.data.heroImage !== 'string' && <Image src={p.data.heroImage} alt="" width={900} />}
+					{p.data.inDevelopment && <span class="tag">In development</span>}
+				</div>
+				<div class="body">
+					<span class="label">{p.data.projectType} · {projectStatus(p)}</span>
+					<h2>{p.data.title}<span class="arrow" aria-hidden="true">→</span></h2>
+					<span class="company">{p.data.company}</span>
+					<p>{p.data.description}</p>
+					{p.data.tags && <div class="chips">{p.data.tags.map((t) => <span>{t}</span>)}</div>}
+				</div>
+			</a>
+		))}
+	</div>
+</Site>
+
+<style>
+	.toolbar { display: flex; gap: 4px; width: fit-content; margin: 2.5rem 0 1.4rem; padding: 4px; background: var(--card); border: 1px solid var(--line); border-radius: 99px; }
+	.toolbar button { font: 500 0.72rem var(--mono); text-transform: uppercase; letter-spacing: 0.05em; border: 0; background: transparent; color: var(--muted); padding: 0.5rem 0.9rem; border-radius: 99px; cursor: pointer; }
+	.toolbar button span { opacity: 0.6; margin-left: 0.2rem; }
+	.toolbar button:hover { color: var(--ink); }
+	.toolbar button.on { background: var(--ink); color: var(--bg); }
+
+	.grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+	.card { display: flex; flex-direction: column; background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; transition: border-color 0.25s, transform 0.25s; }
+	.card[hidden] { display: none; }
+	.card:hover { border-color: var(--ink); transform: translateY(-3px); }
+	.media { position: relative; aspect-ratio: 16 / 9; overflow: hidden; background: var(--line); }
+	.media img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.7s cubic-bezier(0.2, 0.7, 0.2, 1); }
+	.card:hover .media img { transform: scale(1.05); }
+	.tag { position: absolute; top: 1rem; left: 1rem; background: rgba(255, 255, 255, 0.92); color: #141518; font: 500 0.66rem var(--mono); text-transform: uppercase; letter-spacing: 0.05em; padding: 0.3rem 0.65rem; border-radius: 99px; display: flex; gap: 0.4rem; align-items: center; }
+	.tag::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+	.body { padding: 1.4rem 1.6rem 1.6rem; display: flex; flex-direction: column; flex: 1; }
+	h2 { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; font-size: 1.7rem; letter-spacing: -0.03em; line-height: 1.1; margin: 0.5rem 0 0.2rem; }
+	.arrow { color: var(--accent); font-size: 1.3rem; transition: transform 0.25s; }
+	.card:hover .arrow { transform: translateX(4px); }
+	.company { color: var(--accent); font-weight: 500; font-size: 0.95rem; }
+	.body p { color: var(--text); margin: 0.8rem 0 1.2rem; }
+	.body .chips { margin-top: auto; }
+
+	@media (max-width: 760px) {
+		.grid { grid-template-columns: 1fr; }
+		h2 { font-size: 1.45rem; }
+	}
+</style>
+
+<script>
+	const buttons = document.querySelectorAll<HTMLButtonElement>('.toolbar button');
+	buttons.forEach((btn) => btn.addEventListener('click', () => {
+		buttons.forEach((b) => b.classList.toggle('on', b === btn));
+		document.querySelectorAll<HTMLElement>('.card').forEach((card) => {
+			card.hidden = btn.dataset.filter !== 'all' && card.dataset.category !== btn.dataset.filter;
+		});
+	}));
+</script>

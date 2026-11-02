@@ -1,369 +1,194 @@
 ---
-import type { CollectionEntry } from 'astro:content';
-import BaseHead from '../components/BaseHead.astro';
-import Header from '../components/Header.astro';
-import Footer from '../components/Footer.astro';
-import FormattedDate from '../components/FormattedDate.astro';
+// Layout for a single project page: header, meta, video or hero, prose, gallery with lightbox, next project
 import { Image } from 'astro:assets';
+import Site from './Site.astro';
+import { SITE_TITLE } from '../consts';
+import { linkLabel, projectStatus, type Project } from '../lib/projects';
 
-type Props = CollectionEntry<'projects'>['data'];
-
-const { title, description, pubDate, updatedDate, heroImage, company, tags, link, inDevelopment, youtubeVideo, role, projectType, gallery } = Astro.props;
-
-function getEmbedUrl(url: string) {
-    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
-    const match = url.match(regExp);
-    return (match && match[2].length === 11)
-      ? `https://www.youtube.com/embed/${match[2]}`
-      : url;
+interface Props {
+	project: Project;
+	next: Project;
 }
+
+const { project, next } = Astro.props;
+const { title, description, heroImage, company, tags, link, youtubeVideo, role, projectType, gallery } = project.data;
+const hero = heroImage && typeof heroImage !== 'string' ? heroImage : undefined;
+
+function youtubeId(url: string) {
+	const match = url.match(/(?:youtu\.be\/|v\/|embed\/|watch\?v=|&v=)([^#&?]{11})/);
+	return match?.[1];
+}
+const videoId = youtubeVideo && youtubeId(youtubeVideo);
+const meta = [
+	['Role', role],
+	['Organisation', company],
+	['Type', projectType],
+	['Status', projectStatus(project)],
+].filter(([, v]) => v);
 ---
 
-<html lang="en">
-	<head>
-		<BaseHead title={title} description={description} />
-		<style>
-			main {
-				width: calc(100% - 2em);
-				max-width: 100%;
-				margin: 0;
-			}
-			.hero-image {
-				width: 100%;
-				max-width: 1080px;
-				margin: 0 auto;
-			}
-			.hero-image img {
-				display: block;
-				margin: 0 auto;
-				border-radius: 12px;
-				box-shadow: var(--box-shadow);
-				width: 100%;
-				height: auto;
-			}
-			.prose {
-				width: 1080px;
-				max-width: calc(100% - 2em);
-				margin: auto;
-				padding: 1em;
-				color: rgb(var(--gray-dark));
-			}
-			.prose :global(p) {
-				text-align: justify;
-				hyphens: auto;
-			}
-			.title {
-				margin-bottom: 1em;
-				padding: 1em 0;
-				text-align: center;
-				line-height: 1;
-			}
-			.title h1 {
-				margin: 0 0 0.5em 0;
-			}
-			.date {
-				margin-bottom: 0.5em;
-				color: rgb(var(--gray));
-			}
-			.last-updated-on {
-				font-style: italic;
-			}
-            .company {
-                font-size: 1.2em;
-                color: var(--accent);
-                margin-bottom: 0.5em;
-                display: block;
-            }
-            .tags {
-                display: flex;
-                justify-content: center;
-                flex-wrap: wrap;
-                gap: 0.8rem;
-                margin: 1.5rem 0;
-            }
-            .tag {
-                background-color: rgba(var(--gray-light), 0.5);
-                color: rgb(var(--gray-dark));
-                font-size: 0.95rem;
-                padding: 0.4rem 1rem;
-                border-radius: 20px;
-                border: 1px solid rgb(var(--gray));
-            }
-            .project-link {
-                display: block;
-                text-align: center;
-                margin-top: 2rem;
-            }
-			.project-meta {
-				display: grid;
-				grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-				gap: 1.5rem;
-				margin: 1.5rem 0;
-				padding: 1.5rem;
+<Site title={`${title} - ${SITE_TITLE}`} description={description} image={hero}>
+	<a href="/projects" class="back label">← All projects</a>
 
-			}
-			.meta-item {
-				display: flex;
-				flex-direction: column;
-				gap: 0.3rem;
-			}
-			.meta-item.full-width {
-				grid-column: 1 / -1;
-			}
-			.meta-label {
-				font-size: 0.75rem;
-				text-transform: uppercase;
-				letter-spacing: 0.05em;
-				color: rgb(var(--gray));
-				font-weight: bold;
-			}
-			.meta-value {
-				font-weight: 500;
-				color: rgb(var(--gray-dark));
-				line-height: 1.4;
-			}
-			.hero-image {
-				width: 100%;
-				position: relative;
-			}
-			.status-badge {
-				position: absolute;
-				top: 20px;
-				right: 20px;
-				background-color: #ff9800;
-				color: white;
-				font-size: 0.9rem;
-				font-weight: bold;
-				padding: 0.4rem 0.8rem;
-				border-radius: 4px;
-				box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-				text-transform: uppercase;
-			}
-            .gallery {
-                display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-                gap: 1rem;
-                margin-top: 3rem;
-                margin-bottom: 2rem;
-            }
-            .gallery img {
-                width: 100%;
-                height: 200px;
-                object-fit: cover;
-                border-radius: 8px;
-                cursor: pointer;
-                transition: transform 0.2s;
-                box-shadow: var(--box-shadow);
-            }
-            .gallery img:hover {
-                transform: scale(1.02);
-            }
-            
-            /* Modal styles */
-            .modal {
-                display: none;
-                position: fixed;
-                z-index: 1000;
-                left: 0;
-                top: 0;
-                width: 100%;
-                height: 100%;
-                overflow: hidden; /* Prevent scrolling when modal is open */
-                background-color: rgba(0,0,0,0.9);
-                backdrop-filter: blur(5px);
-                /* Flexbox for centering */
-                align-items: center;
-                justify-content: center;
-            }
-            .modal-content {
-                margin: auto;
-                display: block;
-                max-width: 90%;
-                max-height: 90vh;
-                object-fit: contain;
-                border-radius: 4px;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-            }
-            .close {
-                position: absolute;
-                top: 20px;
-                right: 30px;
-                color: #f1f1f1;
-                font-size: 40px;
-                font-weight: bold;
-                transition: 0.3s;
-                cursor: pointer;
-                z-index: 1001;
-            }
-            .close:hover,
-            .close:focus {
-                color: #bbb;
-                text-decoration: none;
-                cursor: pointer;
-            }
-            /* Animation for modal */
-            .modal-content {  
-                animation-name: zoom;
-                animation-duration: 0.3s;
-            }
-            @keyframes zoom {
-                from {transform:scale(0)} 
-                to {transform:scale(1)}
-            }
-            
-            .video-container {
-                position: relative;
-                padding-bottom: 56.25%; /* 16:9 aspect ratio */
-                height: 0;
-                overflow: hidden;
-                border-radius: 12px;
-                box-shadow: var(--box-shadow);
-            }
-            .video-container iframe {
-                position: absolute;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                border: 0;
-            }
-		</style>
-	</head>
+	<header class="head">
+		<span class="label">{projectType} · {projectStatus(project)}</span>
+		<h1>{title}<span>.</span></h1>
+		<p class="lead">{description}</p>
+		{link && (
+			<div class="actions">
+				<a href={link} class="pill accent" target="_blank" rel="noopener">{linkLabel(link)} ↗</a>
+			</div>
+		)}
+	</header>
 
-	<body>
-		<Header />
-		<main>
-			<article>
-				<div class="hero-image">
-					{
-						youtubeVideo ? (
-                            <div class="video-container">
-                                <iframe
-                                    src={getEmbedUrl(youtubeVideo)}
-                                    title="YouTube video player"
-                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                                    allowfullscreen
-                                />
-                            </div>
-						) : (
-							heroImage && (
-                                typeof heroImage === 'string' ? (
-                                    <img width={1020} height={510} src={heroImage} alt="" />
-                                ) : (
-                                    <Image width={1020} height={510} src={heroImage} alt="" />
-                                )
-                            )
-						)
-					}
-					{inDevelopment && <span class="status-badge">In Development</span>}
-				</div>
-				<div class="prose">
-					<div class="title">
-						{inDevelopment ? (
-							<div class="date">
-								In Development
-							</div>
-						) : (
-							<div class="date">
-								<FormattedDate date={pubDate} />
-								{
-									updatedDate && (
-										<div class="last-updated-on">
-											Last updated on <FormattedDate date={updatedDate} />
-										</div>
-									)
-								}
-							</div>
-						)}
-						<h2>{title}</h2>
-                        {company && <span class="company">{company}</span>}
-						
-						{(role || projectType) && (
-							<div class="project-meta">
-								{projectType && (
-									<div class="meta-item">
-										<span class="meta-label">Project Type</span>
-										<span class="meta-value">{projectType}</span>
-									</div>
-								)}
-								{role && (
-									<div class="meta-item">
-										<span class="meta-label">Role</span>
-										<span class="meta-value">{role}</span>
-									</div>
-								)}
-							</div>
-						)}
+	<dl class="meta">
+		{meta.map(([k, v]) => <div><dt class="label">{k}</dt><dd>{v}</dd></div>)}
+	</dl>
 
-                        {tags && (
-                            <div class="tags">
-                                {tags.map(tag => <span class="tag">{tag}</span>)}
-                            </div>
-                        )}
+	<div class="media">
+		{videoId ? (
+			<iframe
+				src={`https://www.youtube-nocookie.com/embed/${videoId}`}
+				title={`${title} video`}
+				loading="lazy"
+				allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+				allowfullscreen
+			/>
+		) : hero && <Image src={hero} alt="" width={1400} loading="eager" />}
+	</div>
 
-						<hr />
-					</div>
-					<slot />
-                    
-                    {gallery && (
-                        <div class="gallery">
-                            {gallery.map((img) => (
-                                <Image 
-                                    src={img} 
-                                    alt="Project screenshot" 
-                                    class="gallery-img" 
-                                    width={600} 
-                                    height={400} 
-                                    data-full-res={typeof img === 'string' ? img : img.src} 
-                                />
-                            ))}
-                        </div>
-                    )}
-				</div>
-			</article>
-            
-            <!-- Modal -->
-            <div id="imageModal" class="modal">
-                <span class="close">&times;</span>
-                <img class="modal-content" id="modalImg">
-            </div>
-		</main>
-		<Footer />
-        
-        <script>
-            // Get the modal
-            const modal = document.getElementById("imageModal");
-            const modalImg = document.getElementById("modalImg") as HTMLImageElement;
-            const images = document.querySelectorAll(".gallery-img");
-            const span = document.getElementsByClassName("close")[0] as HTMLElement;
+	<div class="content">
+		<aside>
+			{tags && (
+				<>
+					<span class="label">Stack & topics</span>
+					<div class="chips">{tags.map((t) => <span>{t}</span>)}</div>
+				</>
+			)}
+		</aside>
+		<article class="prose">
+			<slot />
+		</article>
+	</div>
 
-            if (modal && modalImg && span) {
-                images.forEach(img => {
-                    img.addEventListener('click', function(this: HTMLImageElement) {
-                        modal.style.display = "flex"; // Changed from block to flex for centering
-                        // Use the full resolution image source stored in data attribute
-                        const fullResSrc = this.getAttribute('data-full-res');
-                        modalImg.src = fullResSrc || this.src;
-                    });
-                });
+	{gallery && gallery.length > 0 && (
+		<section>
+			<div class="section-title"><h2>Gallery</h2><span class="label">{gallery.length} images · click to enlarge</span></div>
+			<div class="gallery">
+				{gallery.map((img, i) => (
+					<button type="button" class="shot" data-index={i} aria-label={`Open screenshot ${i + 1}`}>
+						<Image src={img} alt={`${title} screenshot ${i + 1}`} width={800} />
+					</button>
+				))}
+			</div>
+			<dialog class="lightbox" aria-label="Screenshot viewer">
+				{gallery.map((img, i) => <Image src={img} alt={`${title} screenshot ${i + 1}`} width={2000} data-index={i} loading="lazy" />)}
+				<button type="button" class="nav prev" aria-label="Previous">←</button>
+				<button type="button" class="nav next" aria-label="Next">→</button>
+				<button type="button" class="close" aria-label="Close">✕</button>
+			</dialog>
+		</section>
+	)}
 
-                span.onclick = function() { 
-                    modal.style.display = "none";
-                }
-                
-                modal.onclick = function(e) {
-                    if(e.target !== modalImg) {
-                        modal.style.display = "none";
-                    }
-                }
-                
-                // Close on Escape key
-                document.addEventListener('keydown', function(event) {
-                    if (event.key === "Escape") {
-                        modal.style.display = "none";
-                    }
-                });
-            }
-        </script>
-	</body>
-</html>
+	<a href={`/projects/${next.id}`} class="next-project">
+		<div>
+			<span class="label">Next project</span>
+			<strong>{next.data.title} <span aria-hidden="true">→</span></strong>
+			<small>{next.data.description}</small>
+		</div>
+		{next.data.heroImage && typeof next.data.heroImage !== 'string' && <Image src={next.data.heroImage} alt="" width={600} />}
+	</a>
+</Site>
+
+<style>
+	.back { display: inline-block; margin-top: 3rem; transition: color 0.2s; }
+	.back:hover { color: var(--accent); }
+	.head { padding: 1.5rem 0 0; max-width: 820px; }
+	.head h1 { font-size: clamp(2.8rem, 7vw, 5.6rem); line-height: 0.92; letter-spacing: -0.05em; font-weight: 800; margin: 1rem 0 1.2rem; }
+	.head h1 span { color: var(--accent); }
+	.lead { font-size: 1.25rem; color: var(--text); margin: 0; }
+	.actions { margin-top: 1.8rem; }
+
+	.meta { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; margin: 2.5rem 0 0; padding: 1.3rem 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+	.meta dd { margin: 0.3rem 0 0; font-weight: 600; line-height: 1.35; }
+
+	.media { margin-top: 2rem; border-radius: var(--radius); overflow: hidden; background: var(--surface-dark); aspect-ratio: 16 / 9; box-shadow: var(--shadow); }
+	.media iframe, .media img { width: 100%; height: 100%; border: 0; display: block; object-fit: cover; }
+
+	.content { display: grid; grid-template-columns: 260px minmax(0, 720px); gap: 3rem; margin-top: 3.5rem; }
+	aside { position: sticky; top: 6rem; align-self: start; }
+	aside .chips { margin-top: 0.8rem; }
+
+	.prose { font-size: 1.07rem; color: var(--text); }
+	.prose :global(h2), .prose :global(h3) { color: var(--ink); font-size: 1.6rem; letter-spacing: -0.03em; line-height: 1.15; margin: 2.6rem 0 0.8rem; }
+	.prose :global(h3:first-child), .prose :global(h2:first-child) { margin-top: 0; }
+	.prose :global(p) { margin: 0 0 1.1rem; }
+	.prose :global(strong) { color: var(--ink); font-weight: 600; }
+	.prose :global(a:not(.project-button)) { color: var(--ink); border-bottom: 1px solid var(--accent); }
+	.prose :global(a:not(.project-button):hover) { color: var(--accent); }
+	.prose :global(ul), .prose :global(ol) { padding-left: 1.2rem; margin: 0 0 1.2rem; }
+	.prose :global(li) { margin: 0.45rem 0; padding-left: 0.3rem; }
+	.prose :global(li::marker) { color: var(--accent); }
+	.prose :global(hr) { border: 0; border-top: 1px solid var(--line); margin: 2rem 0; }
+
+	.gallery { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+	.shot { padding: 0; border: 1px solid var(--line); border-radius: 16px; overflow: hidden; background: var(--line); aspect-ratio: 16 / 10; cursor: zoom-in; }
+	.shot:first-child:nth-last-child(odd) { grid-column: span 2; aspect-ratio: 21 / 9; }
+	.shot img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.6s cubic-bezier(0.2, 0.7, 0.2, 1); }
+	.shot:hover img { transform: scale(1.04); }
+
+	.lightbox { width: 100vw; height: 100vh; max-width: none; max-height: none; margin: 0; padding: 0; border: 0; background: rgba(10, 10, 12, 0.94); }
+	.lightbox[open] { display: grid; place-items: center; }
+	.lightbox::backdrop { background: transparent; }
+	.lightbox img { display: none; max-width: min(92vw, 1600px); max-height: 86vh; width: auto; height: auto; border-radius: 12px; }
+	.lightbox img.on { display: block; }
+	.lightbox button { position: fixed; border: 0; background: rgba(255, 255, 255, 0.1); color: #fff; width: 3rem; height: 3rem; border-radius: 50%; font-size: 1.1rem; cursor: pointer; }
+	.lightbox button:hover { background: var(--accent); }
+	.lightbox .close { top: 1.2rem; right: 1.2rem; }
+	.lightbox .prev { left: 1.2rem; top: 50%; translate: 0 -50%; }
+	.lightbox .next { right: 1.2rem; top: 50%; translate: 0 -50%; }
+
+	.next-project { display: grid; grid-template-columns: 1fr 320px; gap: 2rem; align-items: center; margin-top: 5.5rem; padding: 1.6rem 1.6rem 1.6rem 2rem; background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); transition: border-color 0.25s; }
+	.next-project:hover { border-color: var(--ink); }
+	.next-project strong { display: block; font-size: clamp(1.8rem, 4vw, 2.8rem); letter-spacing: -0.04em; line-height: 1.05; margin: 0.5rem 0; }
+	.next-project strong span { color: var(--accent); }
+	.next-project small { color: var(--muted); font-size: 0.95rem; }
+	.next-project img { border-radius: 14px; aspect-ratio: 16 / 9; object-fit: cover; width: 100%; }
+
+	@media (max-width: 900px) {
+		.meta { grid-template-columns: 1fr 1fr; }
+		.content { grid-template-columns: 1fr; gap: 1.5rem; margin-top: 2.5rem; }
+		aside { position: static; }
+		.next-project { grid-template-columns: 1fr; }
+	}
+	@media (max-width: 560px) {
+		.gallery { grid-template-columns: 1fr; }
+		.shot:first-child:nth-last-child(odd) { grid-column: auto; aspect-ratio: 16 / 10; }
+		.media { border-radius: 16px; }
+	}
+</style>
+
+<script>
+	// Lightbox: click a screenshot to open it, arrows / keys to browse, Esc or click outside to close
+	const dialog = document.querySelector<HTMLDialogElement>('.lightbox');
+	if (dialog) {
+		const images = [...dialog.querySelectorAll<HTMLImageElement>('img')];
+		let current = 0;
+		const show = (i: number) => {
+			current = (i + images.length) % images.length;
+			images.forEach((img, j) => img.classList.toggle('on', j === current));
+		};
+		document.querySelectorAll<HTMLButtonElement>('.shot').forEach((shot) => shot.addEventListener('click', () => {
+			show(Number(shot.dataset.index));
+			dialog.showModal();
+		}));
+		dialog.querySelector('.prev')!.addEventListener('click', () => show(current - 1));
+		dialog.querySelector('.next')!.addEventListener('click', () => show(current + 1));
+		dialog.querySelector('.close')!.addEventListener('click', () => dialog.close());
+		dialog.addEventListener('click', (e) => { if (e.target === dialog) dialog.close(); });
+		dialog.addEventListener('keydown', (e) => {
+			if (e.key === 'ArrowLeft') show(current - 1);
+			if (e.key === 'ArrowRight') show(current + 1);
+		});
+	}
+</script>
